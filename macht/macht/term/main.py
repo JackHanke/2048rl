@@ -132,6 +132,14 @@ def main(args=None):
 
             if auto:
                 direction = grid_moves.get(random.choice(('w','a','s','d')))
+                simple_rep = [[0 for _ in range(len(grid._grid[0]))] for _ in range(len(grid._grid))]
+                for row_index, row in enumerate(grid._grid):
+                    for column_index, tile in enumerate(row):
+                        if tile is None:
+                            simple_rep[row_index][column_index] = 0
+                        else:
+                            simple_rep[row_index][column_index] = tile.exponent
+                print(f' simple rep is {simple_rep}')
 
             else:
                 key = term.inkey()

@@ -1,5 +1,9 @@
 # Reinforcement Learning for 2048 Game
 
+Fork of the [Macht repo](https://github.com/rolfmorel/macht)
+`python -m macht`
+
+
 - Actually do the RL
     - The states are the board states
     - The actions are the legal moves in the position (left,right,up,down)
