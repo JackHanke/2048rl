@@ -132,6 +132,9 @@ def main(args=None):
 
             if auto:
                 direction = grid_moves.get(random.choice(('w','a','s','d')))
+                if game_over:
+                    save.write_to_file(score, grids, filename=resume or None)
+                    break
                 simple_rep = [[0 for _ in range(len(grid._grid[0]))] for _ in range(len(grid._grid))]
                 for row_index, row in enumerate(grid._grid):
                     for column_index, tile in enumerate(row):
@@ -139,7 +142,7 @@ def main(args=None):
                             simple_rep[row_index][column_index] = 0
                         else:
                             simple_rep[row_index][column_index] = tile.exponent
-                print(f' simple rep is {simple_rep}')
+                # print(f' simple rep is {simple_rep}')
 
             else:
                 key = term.inkey()
@@ -160,6 +163,8 @@ def main(args=None):
                     if action.type == Actions.merge:
                         row, column = action.new
                         score += grid[row][column].value
+                
+                # print(f'score = {score}')
 
                 if actions:  # had any successfull move(s)?
                     grid.spawn_tile(exponent=2 if random.random() > 0.9 else 1)
@@ -169,9 +174,11 @@ def main(args=None):
                 if all(chain(*grid)):
                     game_over = game_over or len(grid.possible_moves) == 0
 
+
     high = 0
     for max_tile in filter(None, (g.highest_tile for g in grids)):
         high = max(high, max_tile.value)
-    print("highest tile: {}\nscore: {}".format(high, score))
+    if not auto: print("highest tile: {}\nscore: {}".format(high, score))
 
+    if auto: return score
     return 0
