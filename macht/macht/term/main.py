@@ -12,8 +12,8 @@ from ..grid import Direction, Actions
 from .grid import Grid
 from .tile import Tile
 
-up, left = ('w', 'k', 'KEY_UP'), ('a', 'h', 'KEY_LEFT')
-down, right = ('s', 'j', 'KEY_DOWN'), ('d', 'l', 'KEY_RIGHT')
+up, left = ('w', 'k', 'KEY_UP', 0), ('a', 'h', 'KEY_LEFT', 1)
+down, right = ('s', 'j', 'KEY_DOWN', 2), ('d', 'l', 'KEY_RIGHT', 3)
 
 grid_moves = {}
 for keys, direction in zip((up, left, down, right), Direction):
@@ -79,7 +79,7 @@ def term_resize(term, grids):
     return True
 
 
-def main(args=None):
+def main(args=None, agent=None):
     global do_resize
     do_resize = True
 
@@ -121,20 +121,16 @@ def main(args=None):
 
         grids.append(grid)
 
-    with term.fullscreen(), term.cbreak(), term.hidden_cursor():
+    def play(do_resize, score, game_over, auto, term_too_small, grid=None, agent=None):
         while True:
-            if do_resize:
+            if do_resize and not auto:
                 term_too_small = not term_resize(term, grids)
                 do_resize = False
 
-            if not term_too_small:
+            if not term_too_small and not auto:
                 draw_score(score, term, end=game_over)
 
             if auto:
-                direction = grid_moves.get(random.choice(('w','a','s','d')))
-                if game_over:
-                    save.write_to_file(score, grids, filename=resume or None)
-                    break
                 simple_rep = [[0 for _ in range(len(grid._grid[0]))] for _ in range(len(grid._grid))]
                 for row_index, row in enumerate(grid._grid):
                     for column_index, tile in enumerate(row):
@@ -142,7 +138,14 @@ def main(args=None):
                             simple_rep[row_index][column_index] = 0
                         else:
                             simple_rep[row_index][column_index] = tile.exponent
-                # print(f' simple rep is {simple_rep}')
+
+                # agent.update()
+
+                direction = grid_moves.get(agent.choose())
+
+                if game_over:
+                    save.write_to_file(score, grids, filename=resume or None)
+                    return score
 
             else:
                 key = term.inkey()
@@ -164,21 +167,24 @@ def main(args=None):
                         row, column = action.new
                         score += grid[row][column].value
                 
-                # print(f'score = {score}')
-
                 if actions:  # had any successfull move(s)?
                     grid.spawn_tile(exponent=2 if random.random() > 0.9 else 1)
 
-                    grid.draw_tiles()
+                    if not auto: grid.draw_tiles()
 
                 if all(chain(*grid)):
                     game_over = game_over or len(grid.possible_moves) == 0
-
+                    
+    if auto:
+        final_score = play(do_resize=do_resize, score=score, game_over=game_over, auto=auto, term_too_small=term_too_small, grid=grid, agent=agent)
+    elif not auto:
+        with term.fullscreen(), term.cbreak(), term.hidden_cursor():
+            final_score = play(do_resize=do_resize, score=score, game_over=game_over, auto=auto, term_too_small=term_too_small)
 
     high = 0
     for max_tile in filter(None, (g.highest_tile for g in grids)):
         high = max(high, max_tile.value)
     if not auto: print("highest tile: {}\nscore: {}".format(high, score))
 
-    if auto: return score
+    if auto: return final_score, high
     return 0
