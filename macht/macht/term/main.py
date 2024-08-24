@@ -131,26 +131,29 @@ def main(args=None, agent=None):
                 draw_score(score, term, end=game_over)
 
             if auto:
-                simple_rep = [[0 for _ in range(len(grid._grid[0]))] for _ in range(len(grid._grid))]
+                # vectorize state
+                simple_rep = [0 for _ in range(16)]
                 for row_index, row in enumerate(grid._grid):
                     for column_index, tile in enumerate(row):
                         if tile is None:
-                            simple_rep[row_index][column_index] = 0
+                            simple_rep[(row_index * 4)  + column_index] = 0
                         else:
-                            simple_rep[row_index][column_index] = tile.exponent
+                            simple_rep[(row_index * 4)  + column_index] = tile.exponent
 
                 # agent chooses direction based on the state
-                direction = grid_moves.get(agent.choose(simple_rep))
+                action = agent.choose(simple_rep)
+                direction = grid_moves.get(action)
 
-                agent.state_history.append()
-                agent.action_history.append()
+                agent.state_history.append(simple_rep)
+                agent.action_history.append(action)
                 agent.reward_history.append()
 
 
                 if game_over:
                     # agent updates behavior if episodic
-                    # agent.update()
-
+                    if not agent.online: 
+                        # agent.update()
+                        pass
                     save.write_to_file(score, grids, filename=resume or None)
                     return score
 

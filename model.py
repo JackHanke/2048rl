@@ -11,9 +11,6 @@ def sigmoid_prime(x):
 
 def softmax(x): return np.exp(x)/sum(np.exp(x))
 
-def softmax_prime(x):
-    pass
-
 def relu(x): return x * (x > 0)
 
 def relu_prime(x): return 1. * (x > 0)
@@ -59,7 +56,8 @@ class Network:
         # backward pass
 
         # final layer
-        delta = np.multiply(self.loss_prime(activation, label), self.activation_funcs[-1][1](weighted_inputs[-1]))
+        delta = np.zeros(activation.shape)
+        delta[label] = softmax(activation)[label]*(1 - softmax(activation)[label])
         #remaining layers
         for layer_index in range(self.num_layers, 1, -1):
             # compute product before weights change
@@ -75,10 +73,5 @@ class Network:
             if layer_index != 2: delta = np.multiply(product, self.activation_funcs[layer_index-1][1](weighted_inputs[layer_index-1]))
             # print(f'norm of weight gradient at layer {layer_index} = {np.linalg.norm(weight_gradient)}')
 
-        return cost
-
-    def inference(self, data): return np.argmax(self._forward(data), axis=0, keepdims=True)
-
 if __name__ == '__main__':
-    for i in range(5,-1,-1):
-        print(i)
+    pass

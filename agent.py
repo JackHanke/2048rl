@@ -3,8 +3,9 @@ from statistics import stdev, median, mean
 from time import time
 import random
 import matplotlib.pyplot as plt
-import numpy
-from model import Network
+import numpy as np
+from model import Network, sigmoid, sigmoid_prime, softmax
+
 
 class DumbAgent:
     def __init__(self):
@@ -16,23 +17,22 @@ class DumbAgent:
 class REINFORCEMonteCarloPolicyGradientAgent:
     def __init__(self):
         self.name = 'REINFORCE Monte Carlo Policy Gradient Agent'
+        self.online = False
         self.learning_rate = -0.01 # negative to perform stochastic gradient ASCENT!
         self.state_history = []
         self.action_history = []
-        self.reward_history = []
+        self.reward_history = [0]
 
         self.policy_function = Network(
             dims=(16,8,4), \
-            activation_funcs = [(sigmoid, sigmoid_prime),(sigmoid, sigmoid_prime)], \
-            loss=(mse_loss, mse_loss_prime), \
-            cost=cost, \
+            activation_funcs = [(sigmoid, sigmoid_prime),(softmax, softmax)], \
             seed=1
         )
         self.performance_function = 0 # this is just the score of an episode
 
     def update(self, state_history, action_history, reward_history):
         
-        for t in range(len(state_history)-1w,-1,-1):
+        for t in range(len(state_history)-1,-1,-1):
             current_state = self.state_history[t]
             current_action = self.action_history[t] # TODO one hot?
             current_reward = self.reward_history[t]
@@ -45,8 +45,18 @@ class REINFORCEMonteCarloPolicyGradientAgent:
                 self.learning_rate*current_reward*(1/policy_eval[current_action])
             )
 
+        # flush history
+        self.state_history = []
+        self.action_history = []
+        self.reward_history = []
+
     def choose(self, state):
-        return self.policy_function.inference(state)
+        def prob_argmax(vec):
+            return np.random.choice([i for i in range(len(vec))],1,p=vec)
+
+        state = np.array([state]).transpose()
+        activation = self.policy_function._forward(state).transpose()[0]
+        return int(prob_argmax(activation))
 
 
 class ActorCriticAgent:
@@ -95,6 +105,7 @@ def experiment(agent, num_trials, dynamic_viz=False):
     if dynamic_viz: plt.show()
 
 # baseline(num_trials=1000, verbose=True)
-experiment(agent=DumbAgent(), num_trials=100, dynamic_viz=True)
+# experiment(agent=DumbAgent(), num_trials=100, dynamic_viz=True)
+experiment(agent=REINFORCEMonteCarloPolicyGradientAgent(), num_trials=100, dynamic_viz=True)
 
 
