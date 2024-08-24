@@ -48,11 +48,12 @@ class Network:
         if include: return activation, weighted_inputs, activations
         else: return activation
 
-    def stochastic_gradient_descent(parameters, learning_rate, parameter_gradient):
-        parameters -= learning_rate * parameter_gradient
-
     # forward and backward pass
     def _backward(self, activation, label, learning_rate):
+
+        def stochastic_gradient_descent(parameters, learning_rate, parameter_gradient):
+            parameters -= learning_rate * parameter_gradient
+            
         # forward pass
         activation, weighted_inputs, activations = self._forward(activation, include=True)
         # backward pass
@@ -79,14 +80,5 @@ class Network:
     def inference(self, data): return np.argmax(self._forward(data), axis=0, keepdims=True)
 
 if __name__ == '__main__':
-    vec = np.zeros((4,1))
-    vec[0] = 1
-    vec[1] = -2
-    vec[2] = 3
-    vec[3] = 4
-
-
-    def change_val(vec):
-        vec[3] = 100
-
-    print(vec)
+    for i in range(5,-1,-1):
+        print(i)

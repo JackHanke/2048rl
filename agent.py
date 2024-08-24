@@ -17,6 +17,9 @@ class REINFORCEMonteCarloPolicyGradientAgent:
     def __init__(self):
         self.name = 'REINFORCE Monte Carlo Policy Gradient Agent'
         self.learning_rate = -0.01 # negative to perform stochastic gradient ASCENT!
+        self.state_history = []
+        self.action_history = []
+        self.reward_history = []
 
         self.policy_function = Network(
             dims=(16,8,4), \
@@ -29,10 +32,10 @@ class REINFORCEMonteCarloPolicyGradientAgent:
 
     def update(self, state_history, action_history, reward_history):
         
-        for t in range(len(state_history)):
+        for t in range(len(state_history)-1w,-1,-1):
             current_state = self.state_history[t]
+            current_action = self.action_history[t] # TODO one hot?
             current_reward = self.reward_history[t]
-            current_action = self.action_history[t]
 
             policy_eval = self.policy_function._forward(current_state)
 
@@ -40,7 +43,7 @@ class REINFORCEMonteCarloPolicyGradientAgent:
                 current_state, \
                 current_action, \
                 self.learning_rate*current_reward*(1/policy_eval[current_action])
-            ) # TODO learning rate has other things multiplied to it
+            )
 
     def choose(self, state):
         return self.policy_function.inference(state)

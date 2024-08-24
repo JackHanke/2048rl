@@ -139,11 +139,18 @@ def main(args=None, agent=None):
                         else:
                             simple_rep[row_index][column_index] = tile.exponent
 
-                # agent.update()
+                # agent chooses direction based on the state
+                direction = grid_moves.get(agent.choose(simple_rep))
 
-                direction = grid_moves.get(agent.choose())
+                agent.state_history.append()
+                agent.action_history.append()
+                agent.reward_history.append()
+
 
                 if game_over:
+                    # agent updates behavior if episodic
+                    # agent.update()
+
                     save.write_to_file(score, grids, filename=resume or None)
                     return score
 
