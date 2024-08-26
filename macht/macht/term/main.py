@@ -129,7 +129,7 @@ def main(args=None, agent=None):
                 term_too_small = not term_resize(term, grids)
                 do_resize = False
 
-            if not term_too_small and (not auto or not viz):
+            if not term_too_small and viz:
                 draw_score(score, term, end=game_over)
 
             if auto:
@@ -138,31 +138,31 @@ def main(args=None, agent=None):
                 for row_index, row in enumerate(grid._grid):
                     for column_index, tile in enumerate(row):
                         if tile is None:
-                            simple_rep[(row_index * 4)  + column_index] = 1
+                            simple_rep[(row_index * 4)  + column_index] = 0
                         else:
-                            simple_rep[(row_index * 4)  + column_index] = tile.exponent+1
+                            simple_rep[(row_index * 4)  + column_index] = tile.exponent/16
 
-                # agent chooses direction based on the state
-                chosen_action = agent.choose(simple_rep)
-                direction = grid_moves.get(chosen_action)
-
+                # generate valid_moves array
+                invalid_moves = []
                 for grid in grids:
-                    actions = grid.move(direction, apply=False)
-                    move_check_cound = 0
-                    while len(actions) == 0:
-                        if move_check_cound > 4: 
-                            game_over = True
-                            break
-                        chosen_action = ((chosen_action+1)%4)
-                        move_check_cound += 1
+                    for action_encoding in range(4):
+                        direction = grid_moves.get(action_encoding)
+                        if len(grid.move(direction, apply=False)) == 0:
+                            invalid_moves.append(action_encoding)
+                if len(invalid_moves) == 4: 
+                    game_over = True
+                else:        
+                    # agent chooses direction based on the state
+                    chosen_action = agent.choose(simple_rep, invalid_moves)
+                    direction = grid_moves.get(chosen_action)
             
                 if game_over:
                     # agent updates behavior if episodic
                     if not agent.online: 
-                        agent.update()
+                        max_weight, max_grad = agent.update()
 
                     save.write_to_file(score, grids, filename=resume or None)
-                    return score
+                    return score, max_weight, max_grad
 
             else:
                 key = term.inkey()
@@ -195,7 +195,6 @@ def main(args=None, agent=None):
                         agent.state_history.append(simple_rep)
                         agent.action_history.append(chosen_action)
                         agent.reward_history.append(reward)
-                        
 
                 if all(chain(*grid)):
                     game_over = game_over or len(grid.possible_moves) == 0
@@ -203,17 +202,18 @@ def main(args=None, agent=None):
     if auto:
         if viz:
             with term.fullscreen(), term.cbreak(), term.hidden_cursor():
-                final_score = play(do_resize=do_resize, score=score, game_over=game_over, auto=auto, term_too_small=term_too_small, grid=grid, agent=agent, viz=viz)
+                final_score, max_weight, max_grad = play(do_resize=do_resize, score=score, game_over=game_over, auto=auto, term_too_small=term_too_small, grid=grid, agent=agent, viz=viz)
         else:
-            final_score = play(do_resize=do_resize, score=score, game_over=game_over, auto=auto, term_too_small=term_too_small, grid=grid, agent=agent, viz=viz)
+            final_score, max_weight, max_grad = play(do_resize=do_resize, score=score, game_over=game_over, auto=auto, term_too_small=term_too_small, grid=grid, agent=agent, viz=viz)
     elif not auto:
         with term.fullscreen(), term.cbreak(), term.hidden_cursor():
-            final_score = play(do_resize=do_resize, score=score, game_over=game_over, auto=auto, term_too_small=term_too_small, viz=True)
+            final_score, max_weight, max_grad = play(do_resize=do_resize, score=score, game_over=game_over, auto=auto, term_too_small=term_too_small, viz=True)
 
     high = 0
     for max_tile in filter(None, (g.highest_tile for g in grids)):
-        high = max(high, max_tile.value)
+        # high = max(high, max_tile.value)
+        high = max(high, max_tile.exponent)
     if not auto: print("highest tile: {}\nscore: {}".format(high, score))
 
-    if auto: return final_score, high
+    if auto: return final_score, high, max_weight, max_grad
     return 0

@@ -9,7 +9,9 @@ def sigmoid_prime(x):
     sig = sigmoid(x)
     return sig * (1-sig)
 
-def softmax(x): return np.exp(x)/sum(np.exp(x))
+def softmax(x):
+    f = np.exp(x - np.max(x))  # shift values
+    return f / f.sum(axis=0)
 
 def relu(x): return x * (x > 0)
 
@@ -59,7 +61,7 @@ class Network:
         # final layer
         delta = np.zeros(activation.shape)
         delta[label] = softmax(activation)[label]*(1 - softmax(activation)[label])
-        print(delta)
+
         #remaining layers
         for layer_index in range(self.num_layers, 1, -1):
             # compute product before weights change
@@ -74,10 +76,12 @@ class Network:
             # computes (layer_index - 1) delta vector
             if layer_index != 2: delta = np.multiply(product, self.activation_funcs[layer_index-1][1](weighted_inputs[layer_index-1]))
             # print(f'norm of weight gradient at layer {layer_index} = {np.linalg.norm(weight_gradient)}')
-
+        
+        return 0,0
 
 class LinearSoftmax:
     def __init__(self):
+        np.random.seed(1)
         self.weights = np.random.normal(loc=0, scale=1, size=(4 ,16))
 
     def _forward(self, activation):
@@ -88,16 +92,14 @@ class LinearSoftmax:
                 parameters -= learning_rate * parameter_gradient
 
         activation = self._forward(state)
-
-        delta = np.zeros((4,16))
-
-        delta[label] = softmax(state)[label]*(1 - softmax(state)[label])
-        state = np.array(state).transpose()
+        gradient = np.zeros((4,16))
+        gradient[label] = (softmax(state)*(1 - softmax(state))).transpose()
         
+        stochastic_gradient_descent(self.weights, learning_rate, gradient)
 
-        stochastic_gradient_descent(self.weights, learning_rate, delta)
+        return np.max(self.weights), np.linalg.norm(gradient[label])
 
 
 if __name__ == '__main__':
-    vec = np.array([-1,0,1,SM2])
+    vec = np.array([-1,0,1,2])
     print(softmax(vec))
