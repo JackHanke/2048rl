@@ -1,6 +1,7 @@
 # this code was created following the lecture notes found here: https://sgfin.github.io/files/notes/CS321_Grosse_Lecture_Notes.pdf
 import numpy as np
 import random
+from math import sqrt
 
 # define activation functions
 def sigmoid(x): return 1/(1+np.exp(-x))
@@ -29,8 +30,8 @@ class Network:
         self.weights = [-1,-1] # insert filler to align indexing with textbook
         self.biases = [-1,-1]
         for dim_index in range(len(dims)-1):
-            self.weights.append(np.random.normal(loc=0, scale=1, size=(dims[dim_index+1], dims[dim_index])))
-            self.biases.append(np.random.normal(loc=0, scale=1, size=(dims[dim_index+1], 1)))
+            self.weights.append(np.random.normal(loc=0, scale=1/sqrt(dims[0]), size=(dims[dim_index+1], dims[dim_index])))
+            self.biases.append(np.random.normal(loc=0, scale=1/sqrt(dims[0]), size=(dims[dim_index+1], 1)))
 
         self.num_layers = len(dims)
 
@@ -53,15 +54,19 @@ class Network:
         def stochastic_gradient_descent(parameters, learning_rate, parameter_gradient):
             parameters -= learning_rate * parameter_gradient
             parameters = np.maximum(-20, parameters)
+            parameters = np.minimum(20, parameters)
             
         # forward pass
         activation, weighted_inputs, activations = self._forward(activation, include=True)
+        
         # backward pass
-
         # final layer
-        delta = np.zeros(activation.shape)
-        delta[label] = softmax(activation)[label]*(1 - softmax(activation)[label])
-
+        if activation.shape == (1,1):
+            delta = activation
+        else:
+            delta = np.zeros(activation.shape)
+            delta[label] = softmax(activation)[label]*(1 - softmax(activation)[label])
+            # delta = np.array([1])
         #remaining layers
         for layer_index in range(self.num_layers, 1, -1):
             # compute product before weights change
