@@ -51,13 +51,7 @@ class Network:
         else: return activation
 
     # forward and backward pass
-    def _backward(self, activation, label, learning_rate):
-
-        def stochastic_gradient_descent(parameters, learning_rate, parameter_gradient):
-            parameters -= learning_rate * parameter_gradient
-            # parameters = np.maximum(-5, parameters)
-            # parameters = np.minimum(5, parameters)
-            
+    def _backward(self, activation, label, learning_rate):            
         # forward pass
         activation, weighted_inputs, activations = self._forward(activation, include=True)
         
@@ -67,7 +61,9 @@ class Network:
             delta = activation
         else:
             delta = np.zeros(activation.shape)
-            delta[label] = softmax(activation)[label]*(1 - softmax(activation)[label])
+            delta[label] = 1
+            delta -= np.multiply(weighted_inputs[-1], activation)
+
             # delta = np.array([1])
         #remaining layers
         for layer_index in range(self.num_layers, 1, -1):
@@ -84,7 +80,6 @@ class Network:
             # print(f'norm of weight gradient at layer {layer_index} = {np.linalg.norm(weight_gradient)}')
             # print(f'norm for weights at layer {layer_index} = {np.linalg.norm(weight_gradient)}')
             # print(f'norm for biases at layer {layer_index} = {np.linalg.norm(bias_gradient)}')
-            # input()
 
         return 0,0
 

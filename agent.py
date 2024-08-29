@@ -89,17 +89,18 @@ class REINFORCEMonteCarloPolicyGradientAgent:
         self.action_history = []
         self.reward_history = [0]
         self.state_representation_function = one_hot_state_rep
-        self.gamma = 0.99 # discounting factor for reward
-        self.policy_function = LinearSoftmax()
-        self.policy_learning_rate = -0.00001 # negative to perform stochastic gradient ASCENT
-        # self.policy_function = Network(
-        #     dims=(256,80,4), \
-        #     activation_funcs = [
-        #         (leaky_relu, leaky_relu_prime), \
-        #         (softmax, softmax) \
-        #     ], \
-        #     seed=1
-        # )
+        self.gamma = 0.999 # discounting factor for reward
+        # self.policy_function = LinearSoftmax()
+        self.policy_learning_rate = -0.005 # negative to perform stochastic gradient ASCENT
+        self.policy_function = Network(
+            dims=(256,100, 60, 4), \
+            activation_funcs = [
+                (leaky_relu, leaky_relu_prime), \
+                (leaky_relu, leaky_relu_prime), \
+                (softmax, softmax) \
+            ], \
+            seed=1
+        )
         self.baseline_learning_rate = -0.001 # negative to perform stochastic gradient ASCENT
         self.baseline_function = Network(
             dims=(256,80,1), \
@@ -112,30 +113,18 @@ class REINFORCEMonteCarloPolicyGradientAgent:
 
     def update(self):
         return_val = 0
-
         for t in range(len(self.state_history)):
             current_state = self.state_history[t]
             current_state = np.array([current_state]).transpose()
             current_action = self.action_history[t]
-            
             policy_eval = self.policy_function._forward(current_state)
-            
             return_val = sum([(self.gamma**(k-t-1)) * (self.reward_history[k]) for k in range(t+1,len(self.state_history))])
             # predicted_state_val = self.baseline_function._forward(current_state)
             predicted_state_val = 0
-            # print(f'return_val at time {t} with gamma={self.gamma} is {return_val} ')
-            # print(f'predicted_state_val at time {t} = {predicted_state_val}')
-            delta = (return_val - predicted_state_val)/1
-            # delta = (return_val - 30)
+            delta = (return_val - predicted_state_val)/1000
             # learning_rate_term = self.learning_rate*return_val*((self.gamma)**t)
-            # dude = max(policy_eval[current_action][0],0.1)
-            dude = policy_eval[current_action][0]
-            # policy_lr_term = self.policy_learning_rate*delta*((self.gamma)**t)/dude
             policy_lr_term = self.policy_learning_rate*delta*((self.gamma)**t)
             baseline_lr_term = self.policy_learning_rate*delta
-            # learning_rate_term = self.learning_rate*return_val*((self.gamma)**t)
-            # print(learning_rate_term)
-            # input()
 
             self.policy_function._backward(
                 current_state, \
@@ -153,7 +142,6 @@ class REINFORCEMonteCarloPolicyGradientAgent:
         self.state_history = []
         self.action_history = []
         self.reward_history = [0]
-
 
     def choose(self, state, invalid_moves):
         def prob_argmax(vec): return int(np.random.choice([i for i in range(len(vec))],1,p=vec)[0])
@@ -257,42 +245,18 @@ def offline_experiment(agent, num_trials, dynamic_viz=False):
         scores.append(final_score)
         running_avg = mean(scores)
 
-        # weights.append(max_weight)
-        # running_avg_weights = mean(weights)
-
-        # grads.append(max_grad)
-        # running_avg_grads = mean(grads)
         if dynamic_viz:
-
             # plt.subplot(1,2,1)
             plt.scatter(trial_num, final_score, c='red')
             plt.scatter(trial_num, running_avg, c='orange')
             plt.title(f'2048 {agent.name} Score')
             plt.xlabel(f'Trial Number (Completed in {(time()-start):.2f}s)')
             plt.ylabel(f'Final Score, Running Average = {running_avg:.1f} Points')
-            
-
-            # plt.subplot(1,2,2)
-            # plt.scatter(trial_num, best_tile, c='pink')
-            # plt.title(f'2048 {agent.name} best tile achieved')
-            # plt.xlabel(f'Trial Number (Completed in {(time()-start):.2f}s)')
-            # plt.ylabel(f'Tile Exponent')
-
-            # plt.subplot(1,2,2)
-            # plt.scatter(trial_num, max_weight, c='yellow')
-            # plt.scatter(trial_num, running_avg_weights, c='green')
-            # plt.title(f'Max Weights for {agent.name}')
-            # plt.xlabel(f'Trial Number (Completed in {(time()-start):.2f}s)')
-            # plt.ylabel(f'Max Weight, Running Average = {running_avg:.1f} Points')
-
-            # plt.subplot(3,1,3)
-            # plt.scatter(trial_num, max_grad, c='blue')
-            # plt.scatter(trial_num, running_avg_grads, c='purple')
-            # plt.title(f'Max Grad for {agent.name}')
-            # plt.xlabel(f'Trial Number (Completed in {(time()-start):.2f}s)')
-            # plt.ylabel(f'Max Grad Norm, Running Average = {running_avg:.1f} Points')
 
             plt.pause(0.00001)
+        else:
+            # print(f'Running average = {running_avg:.1f} \r\033[K', end='')
+            if trial_num % 15 == 0: print(f'Running average after {trial_num} trials = {running_avg:.1f}')
     if dynamic_viz: plt.show()
     print(f'Completed {num_trials} in {(time()-start):.5}s')
 
@@ -314,7 +278,7 @@ def online_experiment(agent, num_trials, dynamic_viz=False):
 offline_experiment(
     agent=REINFORCEMonteCarloPolicyGradientAgent(), \
     num_trials=10000, \
-    dynamic_viz=True
+    dynamic_viz=False
 )
 
 
