@@ -152,11 +152,12 @@ def main(args=None, agent=None):
                 if game_over:
                     # agent updates behavior if episodic
                     if agent.type == 'offline': 
-                        max_weight, max_grad = agent.update()
+                        agent.update()
                         save.write_to_file(score, grids, filename=resume or None)
-                        return score, max_weight, max_grad
+                        return score
 
                     elif agent.type == 'evolutionary':
+                        save.write_to_file(score, grids, filename=resume or None)
                         return score
 
             else:
@@ -197,12 +198,12 @@ def main(args=None, agent=None):
     if auto:
         if viz:
             with term.fullscreen(), term.cbreak(), term.hidden_cursor():
-                final_score, max_weight, max_grad = play(do_resize=do_resize, score=score, game_over=game_over, auto=auto, term_too_small=term_too_small, grid=grid, agent=agent, viz=viz)
+                final_score = play(do_resize=do_resize, score=score, game_over=game_over, auto=auto, term_too_small=term_too_small, grid=grid, agent=agent, viz=viz)
         else:
             final_score = play(do_resize=do_resize, score=score, game_over=game_over, auto=auto, term_too_small=term_too_small, grid=grid, agent=agent, viz=viz)
     elif not auto:
         with term.fullscreen(), term.cbreak(), term.hidden_cursor():
-            final_score, max_weight, max_grad = play(do_resize=do_resize, score=score, game_over=game_over, auto=auto, term_too_small=term_too_small, viz=True)
+            final_score = play(do_resize=do_resize, score=score, game_over=game_over, auto=auto, term_too_small=term_too_small, viz=True)
 
     high = 0
     for max_tile in filter(None, (g.highest_tile for g in grids)):

@@ -4,11 +4,11 @@ from time import time
 import random
 import matplotlib.pyplot as plt
 import numpy as np
-from model import Network, sigmoid, sigmoid_prime, softmax, LinearSoftmax, relu, relu_prime
+from model import Network, sigmoid, sigmoid_prime, softmax, LinearSoftmax, relu, relu_prime, leaky_relu, leaky_relu_prime
 
 def simple_exponent_state_rep(grid):
     rep = [0 for _ in range(16)]
-    for row_index, row in enumerate(grid._grid):
+    for row_index, row in enumerate(grid):
         for column_index, tile in enumerate(row):
             if tile is None:
                 rep[(row_index * 4)  + column_index] = 0
@@ -34,11 +34,12 @@ def one_hot_state_rep(grid):
 class DumbAgent:
     def __init__(self):
         self.name = 'Dumb Agent'
-        self.online = False
+        self.type = 'offline'
         self.state_history = []
         self.action_history = []
         self.reward_history = [0]
-    def choose(self, state): return random.choice((0, 1, 2, 3))
+        self.state_representation_function = simple_exponent_state_rep
+    def choose(self, state, invalid_moves): return random.choice((0, 1, 2, 3))
     def update(self): pass
 
 class EvolutionaryAgent:
@@ -49,7 +50,7 @@ class EvolutionaryAgent:
         self.action_history = []
         self.reward_history = [0]
         self.state_representation_function = one_hot_state_rep
-        self.policy_function = self.policy_function = Network(
+        self.policy_function = Network(
             dims=(256,30,30,30,4), \
             activation_funcs = [
                 (sigmoid, sigmoid_prime), \
@@ -87,25 +88,24 @@ class REINFORCEMonteCarloPolicyGradientAgent:
         self.state_history = []
         self.action_history = []
         self.reward_history = [0]
-        self.state_rep_function = one_hot_state_rep
-        self.gamma = 0.90 # discounting factor for reward
-        # self.policy_function = LinearSoftmax()
-        self.policy_learning_rate = -0.0001 # negative to perform stochastic gradient ASCENT
-        self.policy_function = Network(
-            dims=(256,100,80,4), \
-            activation_funcs = [
-                (sigmoid, sigmoid_prime), \
-                (sigmoid, sigmoid_prime), \
-                (softmax, softmax) \
-            ], \
-            seed=1
-        )
+        self.state_representation_function = one_hot_state_rep
+        self.gamma = 0.99 # discounting factor for reward
+        self.policy_function = LinearSoftmax()
+        self.policy_learning_rate = -0.00001 # negative to perform stochastic gradient ASCENT
+        # self.policy_function = Network(
+        #     dims=(256,80,4), \
+        #     activation_funcs = [
+        #         (leaky_relu, leaky_relu_prime), \
+        #         (softmax, softmax) \
+        #     ], \
+        #     seed=1
+        # )
         self.baseline_learning_rate = -0.001 # negative to perform stochastic gradient ASCENT
         self.baseline_function = Network(
-            dims=(256,60,1), \
+            dims=(256,80,1), \
             activation_funcs = [
-                (relu, relu_prime), \
-                (relu, relu_prime)
+                (leaky_relu, leaky_relu_prime), \
+                (leaky_relu, leaky_relu_prime)
             ], \
             seed=1
         )
@@ -113,52 +113,47 @@ class REINFORCEMonteCarloPolicyGradientAgent:
     def update(self):
         return_val = 0
 
-        max_weights = []
-        max_grads = []
-
         for t in range(len(self.state_history)):
             current_state = self.state_history[t]
             current_state = np.array([current_state]).transpose()
-            current_action = self.action_history[t] # TODO one hot?
+            current_action = self.action_history[t]
             
             policy_eval = self.policy_function._forward(current_state)
             
             return_val = sum([(self.gamma**(k-t-1)) * (self.reward_history[k]) for k in range(t+1,len(self.state_history))])
-            predicted_state_val = self.baseline_function._forward(current_state)
-            print(f'return_val at time {t} with gamma={self.gamma} is {return_val} ')
-            print(f'predicted_state_val at time {t} = {predicted_state_val}')
-            # delta = (return_val - predicted_state_val)
-            delta = (return_val - 30)
+            # predicted_state_val = self.baseline_function._forward(current_state)
+            predicted_state_val = 0
+            # print(f'return_val at time {t} with gamma={self.gamma} is {return_val} ')
+            # print(f'predicted_state_val at time {t} = {predicted_state_val}')
+            delta = (return_val - predicted_state_val)/1
+            # delta = (return_val - 30)
             # learning_rate_term = self.learning_rate*return_val*((self.gamma)**t)
-            dude = max(policy_eval[current_action][0],0.01)
-            # dude = policy_eval[current_action][0]
-            policy_lr_term = self.policy_learning_rate*delta*((self.gamma)**t)/dude
+            # dude = max(policy_eval[current_action][0],0.1)
+            dude = policy_eval[current_action][0]
+            # policy_lr_term = self.policy_learning_rate*delta*((self.gamma)**t)/dude
+            policy_lr_term = self.policy_learning_rate*delta*((self.gamma)**t)
             baseline_lr_term = self.policy_learning_rate*delta
             # learning_rate_term = self.learning_rate*return_val*((self.gamma)**t)
             # print(learning_rate_term)
             # input()
 
-            max_weight, max_grad = self.policy_function._backward(
+            self.policy_function._backward(
                 current_state, \
                 current_action, \
                 policy_lr_term
             )
 
-            self.baseline_function._backward(
-                current_state, \
-                current_action, \
-                baseline_lr_term
-            )
-
-            max_weights.append(max_weight)
-            max_grads.append(max_grad)
+            # self.baseline_function._backward(
+            #     current_state, \
+            #     current_action, \
+            #     baseline_lr_term
+            # )
 
         # flush history
         self.state_history = []
         self.action_history = []
-        self.reward_history = []
+        self.reward_history = [0]
 
-        return max(max_weights), max(max_grads)
 
     def choose(self, state, invalid_moves):
         def prob_argmax(vec): return int(np.random.choice([i for i in range(len(vec))],1,p=vec)[0])
@@ -170,7 +165,9 @@ class REINFORCEMonteCarloPolicyGradientAgent:
                 activation[action] = 0
         normalize = sum(activation)
         # if normalize < 0.000000000001:
-        #     return np.argmax(activation)
+            # return np.argmax(activation)
+        # print(activation)
+        # input()
         for action, prob in enumerate(activation):
             activation[action] = prob/normalize
         return_val = prob_argmax(activation)
@@ -193,6 +190,19 @@ class ActorCriticAgent:
 # mean ~ 1096
 # stdev ~ 549
 # median ~ 1048
+def baseline(agent_class, num_trials):
+    scores = []
+    start = time()
+    for trial_num in range(num_trials):
+        final_score, best_tile = main(args=['--auto'], agent=agent_class)
+        scores.append(final_score)
+    print(f'Data collected in {(time()-start):.2f}s')
+    plt.hist(scores, bins=[25*i for i in range(150)], color='red', density=True)
+    plt.title(f'2048 {agent_class.name} Score')
+    plt.xlabel(f'Trial Number (Completed in {(time()-start):.2f}s)')
+    plt.ylabel(f'Final Score, Running Average = {running_avg:.1f} Points')
+    plt.show()
+
 def evolutionary_experiment(agent_class, generations, num_agents, num_games, agents_that_survive, scale, dynamic_viz=False):
     #  initialize first generation of agents
     agents = [agent_class for _ in range(num_agents)]
@@ -289,26 +299,22 @@ def offline_experiment(agent, num_trials, dynamic_viz=False):
 def online_experiment(agent, num_trials, dynamic_viz=False):
     pass
 
-evolutionary_experiment(
-    agent_class=EvolutionaryAgent(), \
-    generations=1000, \
-    num_agents=1, \
-    num_games=10, \
-    agents_that_survive=1, \
-    scale =0.2, \
-    dynamic_viz=True
-)
+# baseline(agent_class=DumbAgent(), num_trials=20000)
 
-# offline_experiment(
-#     agent=DumbAgent(), \
-#     num_trials=1000, \
-#     dynamic_viz=True
-# ) # 10,000 trials completed in 42.8 s
-
-# offline_experiment(
-#     agent=REINFORCEMonteCarloPolicyGradientAgent(), \
-#     num_trials=1000, \
+# evolutionary_experiment(
+#     agent_class=EvolutionaryAgent(), \
+#     generations=1000, \
+#     num_agents=2, \
+#     num_games=20, \
+#     agents_that_survive=1, \
+#     scale =0.05, \
 #     dynamic_viz=True
 # )
+
+offline_experiment(
+    agent=REINFORCEMonteCarloPolicyGradientAgent(), \
+    num_trials=10000, \
+    dynamic_viz=True
+)
 
 

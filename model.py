@@ -15,8 +15,10 @@ def softmax(x):
     return f / f.sum(axis=0)
 
 def relu(x): return x * (x > 0)
-
 def relu_prime(x): return 1. * (x > 0)
+
+def leaky_relu(x, m=0.25): return x * (x > 0) + m*x * (x <= 0)
+def leaky_relu_prime(x, m=0.25): return 1 * (x > 0) + m * (x <= 0)
 
 class Network:
     # dims is tuple of length >=2 that defines the model dimensions
@@ -53,8 +55,8 @@ class Network:
 
         def stochastic_gradient_descent(parameters, learning_rate, parameter_gradient):
             parameters -= learning_rate * parameter_gradient
-            parameters = np.maximum(-20, parameters)
-            parameters = np.minimum(20, parameters)
+            # parameters = np.maximum(-5, parameters)
+            # parameters = np.minimum(5, parameters)
             
         # forward pass
         activation, weighted_inputs, activations = self._forward(activation, include=True)
@@ -74,35 +76,34 @@ class Network:
             m = activations[layer_index-1].shape[1] # batch_size
             weight_gradient = (np.dot(delta, activations[layer_index-1].transpose()))*(1/m) # average weight gradient
             bias_gradient = (delta).mean(axis=1, keepdims=True) # average bias gradient
-            
-            stochastic_gradient_descent(self.weights[layer_index], learning_rate, weight_gradient)
-            stochastic_gradient_descent(self.biases[layer_index], learning_rate, bias_gradient)
+            self.weights[layer_index] -= learning_rate*weight_gradient
+            self.biases[layer_index] -= learning_rate*bias_gradient
 
             # computes (layer_index - 1) delta vector
             if layer_index != 2: delta = np.multiply(product, self.activation_funcs[layer_index-1][1](weighted_inputs[layer_index-1]))
             # print(f'norm of weight gradient at layer {layer_index} = {np.linalg.norm(weight_gradient)}')
-        
+            # print(f'norm for weights at layer {layer_index} = {np.linalg.norm(weight_gradient)}')
+            # print(f'norm for biases at layer {layer_index} = {np.linalg.norm(bias_gradient)}')
+            # input()
+
         return 0,0
 
 class LinearSoftmax:
     def __init__(self):
         np.random.seed(1)
-        self.weights = np.random.normal(loc=0, scale=1, size=(4 ,16))
+        self.weights = np.random.normal(loc=0, scale=1/16, size=(4 ,(16*16)))
 
     def _forward(self, activation):
         return softmax(np.dot(self.weights, activation))
 
     def _backward(self, state, label, learning_rate):
-        def stochastic_gradient_descent(parameters, learning_rate, parameter_gradient):
-                parameters -= learning_rate * parameter_gradient
-
         activation = self._forward(state)
-        gradient = np.zeros((4,16))
-        gradient[label] = (softmax(state)*(1 - softmax(state))).transpose()
+        gradient = np.zeros((4,(16*16)))
+        gradient[label] = state.transpose()
+        gradient -= np.dot(activation, state.transpose())
         
-        stochastic_gradient_descent(self.weights, learning_rate, gradient)
-
-        return np.max(self.weights), np.linalg.norm(gradient[label])
+        self.weights -= learning_rate*gradient
+        return 0, 0
 
 
 if __name__ == '__main__':
