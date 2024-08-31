@@ -3,6 +3,7 @@
 Fork of the [Macht repo](https://github.com/rolfmorel/macht)
 `python -m macht`
 
+[Comprehensive Review](https://arxiv.org/pdf/2212.11087) of current state of 2048 RL Work as of 2023
 
 - Actually do the RL
     - The states are the board states
