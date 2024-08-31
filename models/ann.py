@@ -1,10 +1,9 @@
-# code based on Michael Nielsen's Online Textbook: http://neuralnetworksanddeeplearning.com/
 import numpy as np
 import random
 from math import sqrt
-
 from functions import *
 
+# code based on Michael Nielsen's Online Textbook: http://neuralnetworksanddeeplearning.com/
 class ArtificialNeuralNetwork:
     # dims is tuple of length >=2 that defines the model dimensions
     #   ie. (784, 15, 10) means a 784 x 15 array and a 15 x 10 array 

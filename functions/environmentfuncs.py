@@ -1,9 +1,3 @@
-from macht.macht.term import main
-from statistics import stdev, median, mean
-from time import time
-import random
-import numpy as np
-from model import Network, sigmoid, sigmoid_prime, softmax, LinearSoftmax, relu, relu_prime, leaky_relu, leaky_relu_prime
 
 def simple_exponent_state_rep(grid):
     rep = [0 for _ in range(16)]
@@ -28,7 +22,3 @@ def one_hot_state_rep(grid):
                 temp_vec[tile.exponent] = 1
                 rep += temp_vec
     return rep
-
-def mask(activation, invalid_moves):
-    pass
-

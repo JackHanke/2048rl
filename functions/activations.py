@@ -14,3 +14,4 @@ def relu_prime(x): return 1. * (x > 0)
 
 def leaky_relu(x, m=0.25): return x * (x > 0) + m*x * (x <= 0)
 def leaky_relu_prime(x, m=0.25): return 1 * (x > 0) + m * (x <= 0)
+

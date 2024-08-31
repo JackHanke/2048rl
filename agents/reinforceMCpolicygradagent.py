@@ -1,3 +1,7 @@
+import numpy as np
+from models.ann import ArtificialNeuralNetwork
+from functions.environmentfuncs import one_hot_state_rep
+from functions.activations import leaky_relu, leaky_relu_prime, softmax
 
 class REINFORCEMonteCarloPolicyGradientAgent:
     def __init__(self):
@@ -7,10 +11,10 @@ class REINFORCEMonteCarloPolicyGradientAgent:
         self.action_history = []
         self.reward_history = [0]
         self.state_representation_function = one_hot_state_rep
-        self.gamma = 0.999 # discounting factor for reward
+        self.gamma = 1 # discounting factor for reward
         # self.policy_function = LinearSoftmax()
-        self.policy_learning_rate = -0.005 # negative to perform stochastic gradient ASCENT
-        self.policy_function = Network(
+        self.policy_learning_rate = -0.009 # negative to perform stochastic gradient ASCENT
+        self.policy_function = ArtificialNeuralNetwork(
             dims=(256,100, 60, 4), \
             activation_funcs = [
                 (leaky_relu, leaky_relu_prime), \
@@ -20,7 +24,7 @@ class REINFORCEMonteCarloPolicyGradientAgent:
             seed=1
         )
         self.baseline_learning_rate = -0.001 # negative to perform stochastic gradient ASCENT
-        self.baseline_function = Network(
+        self.baseline_function = ArtificialNeuralNetwork(
             dims=(256,80,1), \
             activation_funcs = [
                 (leaky_relu, leaky_relu_prime), \
@@ -62,7 +66,7 @@ class REINFORCEMonteCarloPolicyGradientAgent:
         self.reward_history = [0]
 
     def choose(self, state, invalid_moves):
-        def prob_argmax(vec): return int(np.random.choice([i for i in range(len(vec))],1,p=vec)[0])
+        
         state = np.array([state]).transpose()
         activation = self.policy_function._forward(state).transpose()[0]
         # invalid action masking
@@ -70,10 +74,7 @@ class REINFORCEMonteCarloPolicyGradientAgent:
             if action in invalid_moves:
                 activation[action] = 0
         normalize = sum(activation)
-        # if normalize < 0.000000000001:
-            # return np.argmax(activation)
-        # print(activation)
-        # input()
+        
         for action, prob in enumerate(activation):
             activation[action] = prob/normalize
         return_val = prob_argmax(activation)
