@@ -14,7 +14,8 @@ The `experiments` directory stores experiments for different types of agents
     - The return is the predicted sum of future rewards. This is the predicted total score. Is discounting appropriate? Should the reward be normalized?
     - Episodic, the game eventually ends
 
-- Code lol
+- Code:
+    - Implement grid search for various params 
 
 - Make visual for 2 or 3 games side by side with caption, hook up finished agent to [original repo](https://github.com/gabrielecirulli/2048)
 

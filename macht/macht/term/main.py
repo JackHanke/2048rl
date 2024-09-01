@@ -131,22 +131,60 @@ def main(args=None, agent=None):
             if not term_too_small and viz:
                 draw_score(score, term, end=game_over)
 
+            # TODO move or remove
+
             if auto:
                 # generate valid_moves array
                 invalid_moves = []
+                valid_moves = {}
                 for grid in grids:
                     for action_encoding in range(4):
                         direction = grid_moves.get(action_encoding)
                         if len(grid.move(direction, apply=False)) == 0:
                             invalid_moves.append(action_encoding)
+                        else: 
+                            valid_moves[action_encoding] = []
                 if len(invalid_moves) == 4: 
                     game_over = True
+
+                afterstates = []
+                for grid in grids:
+                    for action_encoding in valid_moves.keys():
+                        direction = grid_moves.get(action_encoding)
+                        board_copy = Grid()
+                        grid_copy = [[None for _ in range(4)] for _ in range(4)]
+                        for row_index, row in enumerate(grid._grid):
+                            for col_index, tile_thing in enumerate(row):
+                                if tile_thing is not None:
+                                    grid_copy[row_index][col_index] = Tile(base=tile_thing.base, exponent=tile_thing.exponent)
+                        board_copy._grid = grid_copy
+                        actions = board_copy.move(direction)
+                        reward = 0
+                        for action in actions:
+                            if action.type == Actions.merge:
+                                row, column = action.new
+                                reward += board_copy[row][column].value
+                        afterstates.append(board_copy._grid)
+                        for row_index, row in enumerate(grid_copy):
+                            for col_index, tile_thing in enumerate(row):
+                                new_grid_copy = [[None for _ in range(4)] for _ in range(4)]
+                                new_grid_copy_2 = [[None for _ in range(4)] for _ in range(4)]
+                                if grid_copy[row_index][col_index] is None:
+                                    new_grid_copy[row_index][col_index] = Tile(base=2, exponent=1)
+                                    new_grid_copy_2[row_index][col_index] = Tile(base=2, exponent=2)
+                                    valid_moves[action_encoding].append((reward,new_grid_copy,0.9))
+                                    valid_moves[action_encoding].append((reward,new_grid_copy_2,0.1))
+                                    
+                if len(invalid_moves) == 4: 
+                    game_over = True
+
                 else:        
                     # vectorize state
                     # state_representation = simple_exponent_state_rep(grid._grid)
                     state_representation = agent.state_representation_function(grid._grid)
                     # agent chooses direction based on the state
-                    chosen_action = agent.choose(state_representation, invalid_moves)
+                    # chosen_action = agent.choose(state_representation, invalid_moves)
+                    chosen_action = agent.choose(state=state_representation, valid_moves=valid_moves)
                     direction = grid_moves.get(chosen_action)
             
                 if game_over:
@@ -181,12 +219,11 @@ def main(args=None, agent=None):
                         row, column = action.new
                         reward += grid[row][column].value
                         score += grid[row][column].value
-                # print(reward)
                 
                 if actions:  # had any successfull move(s)?
                     grid.spawn_tile(exponent=2 if random.random() > 0.9 else 1)
 
-                    if viz: grid.draw_tiles()
+                    if viz or not auto: grid.draw_tiles()
                     if auto and agent.type != 'evolutionary':
                         agent.state_history.append(state_representation)
                         agent.action_history.append(chosen_action)

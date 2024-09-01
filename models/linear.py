@@ -11,5 +11,5 @@ class Linear:
     def _forward(self, activation):
         return np.dot(self.weights.transpose(), activation)
 
-    def _backward(self, state, label, learning_rate):
-        self.weights -= learning_rate*state
+    def _backward(self, activation, label, learning_rate):
+        self.weights -= learning_rate*activation
