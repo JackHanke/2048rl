@@ -17,7 +17,7 @@ def offline_experiment(agent, num_trials, dynamic_viz=False):
             input(e)
         scores.append(final_score)
         running_avg = mean(scores)
-        if dynamic_viz:
+        if dynamic_viz and trial_num % 15 == 0:
             plt.scatter(trial_num, final_score, c='red')
             plt.scatter(trial_num, running_avg, c='orange')
             plt.title(f'2048 {agent.name} Score')

@@ -19,7 +19,7 @@ class MonteCarloApproxAgent:
         self.reward_history = [0]
         self.discounting_param = 1
         self.epsilon = 0.05
-        self.learning_rate = -0.1
+        self.learning_rate = -0.00001
         self.state_representation_function = one_hot_state_rep
         # self.state_value_function_approx = Linear(dims=(256,1), seed=1)
         self.state_value_function_approx = ArtificialNeuralNetwork(
