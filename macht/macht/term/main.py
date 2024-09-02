@@ -4,7 +4,7 @@ import signal
 import argparse
 from functools import partial, reduce
 from itertools import chain
-
+from time import time
 import blessed
 
 from .. import save
@@ -123,6 +123,7 @@ def main(args=None, agent=None):
         grids.append(grid)
 
     def play(do_resize, score, game_over, auto, viz, term_too_small, grid=None, agent=None):
+        tot_choose_time = 0
         while True:
             if do_resize and viz:
                 term_too_small = not term_resize(term, grids)
@@ -178,21 +179,26 @@ def main(args=None, agent=None):
                 if len(invalid_moves) == 4: 
                     game_over = True
 
-                else:        
+                else:
+                    # choose_time = time()      
                     # vectorize state
                     # state_representation = simple_exponent_state_rep(grid._grid)
                     state_representation = agent.state_representation_function(grid._grid)
                     # agent chooses direction based on the state
                     # chosen_action = agent.choose(state_representation, invalid_moves)
                     chosen_action = agent.choose(state=state_representation, valid_moves=valid_moves)
+                    # tot_choose_time += (time()-choose_time)
                     direction = grid_moves.get(chosen_action)
             
                 if game_over:
                     # agent updates behavior if episodic
                     if agent.type == 'offline': 
-                        agent.update()
+                        update_time = time()
+                        mse = agent.update()
+                        # print(f'Total Choose time = {tot_choose_time:.8f}s')
+                        # print(f'time to update = {(time() - update_time):.8f}s')
                         save.write_to_file(score, grids, filename=resume or None)
-                        return score
+                        return score, mse
 
                     elif agent.type == 'evolutionary':
                         save.write_to_file(score, grids, filename=resume or None)
@@ -237,7 +243,7 @@ def main(args=None, agent=None):
             with term.fullscreen(), term.cbreak(), term.hidden_cursor():
                 final_score = play(do_resize=do_resize, score=score, game_over=game_over, auto=auto, term_too_small=term_too_small, grid=grid, agent=agent, viz=viz)
         else:
-            final_score = play(do_resize=do_resize, score=score, game_over=game_over, auto=auto, term_too_small=term_too_small, grid=grid, agent=agent, viz=viz)
+            final_score, mse = play(do_resize=do_resize, score=score, game_over=game_over, auto=auto, term_too_small=term_too_small, grid=grid, agent=agent, viz=viz)
     elif not auto:
         with term.fullscreen(), term.cbreak(), term.hidden_cursor():
             final_score = play(do_resize=do_resize, score=score, game_over=game_over, auto=auto, term_too_small=term_too_small, viz=True)
@@ -248,5 +254,5 @@ def main(args=None, agent=None):
         high = max(high, max_tile.exponent)
     if not auto: print("highest tile: {}\nscore: {}".format(high, score))
 
-    if auto: return final_score, high
+    if auto: return final_score, high, int(mse)
     return 0
