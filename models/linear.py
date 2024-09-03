@@ -8,8 +8,8 @@ class Linear:
         self.dims = dims
         self.weights = np.random.normal(loc=0, scale=(1/sqrt(dims[0])), size=(self.dims))
 
-    def _forward(self, activation):
+    def forward(self, activation):
         return np.dot(self.weights.transpose(), activation)
 
-    def _backward(self, activation, label, learning_rate):
+    def backward(self, activation, label, learning_rate):
         self.weights -= learning_rate*activation

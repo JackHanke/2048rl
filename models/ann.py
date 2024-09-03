@@ -20,7 +20,7 @@ class ArtificialNeuralNetwork:
         self.num_layers = len(dims)
 
     # forward pass
-    def _forward(self, activation, include=False):
+    def forward(self, activation, include=False):
         weighted_inputs = [-1, activation]
         activations = [-1, activation]
         for layer_index in range(2,self.num_layers+1):
@@ -33,11 +33,11 @@ class ArtificialNeuralNetwork:
         else: return activation
 
     # forward and backward pass
-    def _backward(self, activation, label, learning_rate):            
+    def backward(self, activation, label, learning_rate):            
         # print(f'state = {activation.transpose()}')
         
         # forward pass
-        activation, weighted_inputs, activations = self._forward(activation, include=True)
+        activation, weighted_inputs, activations = self.forward(activation, include=True)
         # backward pass
         # final layer
         if activation.shape == (1,1):
@@ -56,11 +56,18 @@ class ArtificialNeuralNetwork:
             bias_gradient = (delta).mean(axis=1, keepdims=True) # average bias gradient
             b_grad_norm = np.linalg.norm(bias_gradient)
 
-            if w_grad_norm < 10: self.weights[layer_index] -= learning_rate*weight_gradient
-            else: self.weights[layer_index] -= learning_rate*(weight_gradient/w_grad_norm)
+            # TODO fix gradient clipping alg below
+            # if w_grad_norm < 10: 
+            #     print('w grad too big')
+            #     self.weights[layer_index] -= learning_rate*weight_gradient
+            # else: self.weights[layer_index] -= learning_rate*(weight_gradient/w_grad_norm)
+            # if b_grad_norm < 10: 
+            #     print('b grad too big')
+            #     self.biases[layer_index] -= learning_rate*bias_gradient
+            # else: self.biases[layer_index] -= learning_rate*(bias_gradient/b_grad_norm)
 
-            if b_grad_norm < 10: self.biases[layer_index] -= learning_rate*bias_gradient
-            else: self.biases[layer_index] -= learning_rate*(bias_gradient/b_grad_norm)
+            self.weights[layer_index] -= learning_rate*weight_gradient
+            self.biases[layer_index] -= learning_rate*bias_gradient
 
             # print(f'largest w at {layer_index} = {np.amax(self.weights[layer_index])}')
             # print(f'largest w at {layer_index} = {np.amax(self.biases[layer_index])}')
@@ -75,4 +82,5 @@ class ArtificialNeuralNetwork:
             if layer_index != 2: delta = np.multiply(product, self.activation_funcs[layer_index-1][1](weighted_inputs[layer_index-1]))
 
 
-
+    def save(self):
+        pass

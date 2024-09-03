@@ -19,14 +19,13 @@ class MonteCarloApproxAgent:
         self.reward_history = [0]
         self.discounting_param = 1
         self.epsilon = 0.05
-        self.learning_rate = -0.000001
+        self.learning_rate = (-1*(10**(-4)))
         self.state_representation_function = one_hot_state_rep
         self.state_value_function_approx = ArtificialNeuralNetwork(
-            dims=(256, 128, 1), \
+            dims=(256, 128, 1),
             activation_funcs = [
-                (relu, relu_prime),
-                (relu, relu_prime),
-                (relu, relu_prime)
+                (leaky_relu, leaky_relu_prime),
+                (leaky_relu, leaky_relu_prime)
             ], \
             seed=1
         )
@@ -37,14 +36,16 @@ class MonteCarloApproxAgent:
         for t in range(len(self.state_history)):
             current_state = self.state_history[t]
             current_state = np.array([current_state]).transpose()
-            current_action = self.action_history[t]
-            predicted_state_val = self.state_value_function_approx._forward(current_state)
+            predicted_state_val = self.state_value_function_approx.forward(current_state)
             return_val = sum([(self.discounting_param**(k-t-1)) * (self.reward_history[k]) for k in range(t+1,len(self.state_history))])
-            delta = (return_val - predicted_state_val)
+            delta = (return_val*(10**(-3)) - predicted_state_val)
+            # print(predicted_state_val)
+            # print(return_val*(10**(-4)))
+            # print(f'delta = {delta}')
             mse += delta**2
             lr_term = self.learning_rate*delta
             # print(f'lr_term = {lr_term}')
-            self.state_value_function_approx._backward(
+            self.state_value_function_approx.backward(
                 activation=current_state, \
                 label=None, \
                 learning_rate=lr_term
@@ -64,7 +65,7 @@ class MonteCarloApproxAgent:
             for thing in value:
                 future_state_rep = self.state_representation_function(thing[1])
                 future_state_rep = np.array([future_state_rep]).transpose()
-                future_state_approx_val = self.state_value_function_approx._forward(future_state_rep)
+                future_state_approx_val = self.state_value_function_approx.forward(future_state_rep)
                 val += thing[0] + (future_state_approx_val*thing[2] )
             predicted_rewards_for_each_action[key] = (val/len(value)) # average value of the action
         chosen_action = better_argmax_dict(predicted_rewards_for_each_action)

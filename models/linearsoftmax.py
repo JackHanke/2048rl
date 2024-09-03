@@ -9,10 +9,10 @@ class LinearSoftmax:
         self.dims = dims
         self.weights = np.random.normal(loc=0, scale=(1/sqrt(dims[0])), size=(self.dims))
 
-    def _forward(self, activation):
+    def forward(self, activation):
         return softmax(np.dot(self.weights, activation))
 
-    def _backward(self, state, label, learning_rate):
+    def backward(self, state, label, learning_rate):
         activation = self._forward(state)
         gradient = np.zeros(dims)
         gradient[label] = state.transpose()

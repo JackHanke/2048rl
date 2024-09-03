@@ -132,8 +132,6 @@ def main(args=None, agent=None):
             if not term_too_small and viz:
                 draw_score(score, term, end=game_over)
 
-            # TODO move or remove
-
             if auto:
                 # generate valid_moves array
                 invalid_moves = []

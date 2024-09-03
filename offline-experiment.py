@@ -30,7 +30,6 @@ def offline_experiment(agent, num_trials, report_every=15, dynamic_viz=False):
             plt.title(f'2048 {agent.name} Score')
             plt.xlabel(f'Trial Number (Completed in {(time()-start):.2f}s)')
             plt.ylabel(f'Final Score, Last {report_every} Running Average = {running_avg:.1f} Points')
-            # plt.pause(0.00001)
 
             plt.subplot(2, 2, 2)
             plt.scatter(trial_num, mse, c='red')

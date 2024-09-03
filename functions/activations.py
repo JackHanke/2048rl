@@ -12,6 +12,6 @@ def softmax(x):
 def relu(x): return x * (x > 0)
 def relu_prime(x): return 1. * (x > 0)
 
-def leaky_relu(x, m=0.25): return x * (x > 0) + m*x * (x <= 0)
-def leaky_relu_prime(x, m=0.25): return 1 * (x > 0) + m * (x <= 0)
+def leaky_relu(x, m=0.05): return x * (x > 0) + m*x * (x <= 0)
+def leaky_relu_prime(x, m=0.05): return 1 * (x > 0) + m * (x <= 0)
 
