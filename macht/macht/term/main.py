@@ -124,6 +124,7 @@ def main(args=None, agent=None):
 
     def play(do_resize, score, game_over, auto, viz, term_too_small, grid=None, agent=None):
         tot_choose_time = 0
+        old_afterstate = [0 for _ in range(16)]
         while True:
             if do_resize and viz:
                 term_too_small = not term_resize(term, grids)
@@ -163,7 +164,7 @@ def main(args=None, agent=None):
                             if action.type == Actions.merge:
                                 row, column = action.new
                                 reward += board_copy[row][column].value
-                        afterstates.append(board_copy._grid)
+                        afterstates.append((action_encoding, reward, board_copy._grid))
                         for row_index, row in enumerate(grid_copy):
                             for col_index, tile_thing in enumerate(row):
                                 new_grid_copy = [[None for _ in range(4)] for _ in range(4)]
@@ -184,7 +185,10 @@ def main(args=None, agent=None):
                     state_representation = agent.state_representation_function(grid._grid)
                     # agent chooses direction based on the state
                     # chosen_action = agent.choose(state_representation, invalid_moves)
-                    chosen_action = agent.choose(state=state_representation, valid_moves=valid_moves)
+                    # chosen_action = agent.choose(state=state_representation, valid_moves=valid_moves)
+                    chosen_action = agent.choose(state=grid._grid, afterstates=afterstates)
+                    if agent.type == 'online':
+                        agent.update(state=grid._grid, afterstate = old_afterstate, chosen_action=chosen_action, afterstates=afterstates)
                     # tot_choose_time += (time()-choose_time)
                     direction = grid_moves.get(chosen_action)
             
@@ -196,7 +200,11 @@ def main(args=None, agent=None):
                         # print(f'Total Choose time = {tot_choose_time:.8f}s')
                         # print(f'time to update = {(time() - update_time):.8f}s')
                         save.write_to_file(score, grids, filename=resume or None)
-                        return score, mse
+                        return score
+
+                    elif agent.type == 'online':
+                        save.write_to_file(score, grids, filename=resume or None)
+                        return score
 
                     elif agent.type == 'evolutionary':
                         save.write_to_file(score, grids, filename=resume or None)
@@ -215,6 +223,8 @@ def main(args=None, agent=None):
             for grid in grids:
                 reward = 0
                 actions = grid.move(direction)
+                old_afterstate = grid._grid
+                print(old_afterstate)
 
                 for action in actions:
                     grid.draw_empty_tile(*action.old)
@@ -228,10 +238,11 @@ def main(args=None, agent=None):
                     grid.spawn_tile(exponent=2 if random.random() > 0.9 else 1)
 
                     if viz or not auto: grid.draw_tiles()
-                    if auto and agent.type != 'evolutionary':
+                    if auto and agent.type == 'offline':
                         agent.state_history.append(state_representation)
                         agent.action_history.append(chosen_action)
                         agent.reward_history.append(reward)
+                    
 
                 if all(chain(*grid)):
                     game_over = game_over or len(grid.possible_moves) == 0
@@ -241,7 +252,7 @@ def main(args=None, agent=None):
             with term.fullscreen(), term.cbreak(), term.hidden_cursor():
                 final_score = play(do_resize=do_resize, score=score, game_over=game_over, auto=auto, term_too_small=term_too_small, grid=grid, agent=agent, viz=viz)
         else:
-            final_score, mse = play(do_resize=do_resize, score=score, game_over=game_over, auto=auto, term_too_small=term_too_small, grid=grid, agent=agent, viz=viz)
+            final_score = play(do_resize=do_resize, score=score, game_over=game_over, auto=auto, term_too_small=term_too_small, grid=grid, agent=agent, viz=viz)
     elif not auto:
         with term.fullscreen(), term.cbreak(), term.hidden_cursor():
             final_score = play(do_resize=do_resize, score=score, game_over=game_over, auto=auto, term_too_small=term_too_small, viz=True)
@@ -252,5 +263,5 @@ def main(args=None, agent=None):
         high = max(high, max_tile.exponent)
     if not auto: print("highest tile: {}\nscore: {}".format(high, score))
 
-    if auto: return final_score, high, int(mse)
+    if auto: return final_score, higH
     return 0

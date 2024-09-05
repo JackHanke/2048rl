@@ -6,7 +6,7 @@ def simple_exponent_state_rep(grid):
             if tile is None:
                 rep[(row_index * 4)  + column_index] = 0
             else:
-                rep[(row_index * 4)  + column_index] = tile.exponent/16
+                rep[(row_index * 4)  + column_index] = tile.exponent
     return rep
 
 def one_hot_state_rep(grid):

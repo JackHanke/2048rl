@@ -1,6 +1,6 @@
 import numpy as np
 from models.ann import ArtificialNeuralNetwork
-from functions.environmentfuncs import one_hot_state_rep
+from functions.repfuncs import one_hot_state_rep
 from functions.activations import leaky_relu, leaky_relu_prime, softmax
 from functions.rlfuncs import prob_argmax
 
