@@ -224,7 +224,7 @@ def main(args=None, agent=None):
                 reward = 0
                 actions = grid.move(direction)
                 old_afterstate = grid._grid
-                print(old_afterstate)
+                # print(old_afterstate)
 
                 for action in actions:
                     grid.draw_empty_tile(*action.old)
@@ -263,5 +263,5 @@ def main(args=None, agent=None):
         high = max(high, max_tile.exponent)
     if not auto: print("highest tile: {}\nscore: {}".format(high, score))
 
-    if auto: return final_score, higH
+    if auto: return final_score, high
     return 0

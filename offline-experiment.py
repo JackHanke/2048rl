@@ -6,10 +6,12 @@ import numpy as np
 from macht.macht.term import main
 # from agents.reinforceMCpolicygradagent import REINFORCEMonteCarloPolicyGradientAgent
 from agents.tdagent import TDApproxAgent
+from agents.dumbagent import DumbAgent
 
 def offline_experiment(agent, num_trials, report_every=15, dynamic_viz=False):
     scores = []
     start = time()
+    mse = 0
     for trial_num in range(num_trials):
         # game_time = time()
         try:
@@ -34,6 +36,12 @@ def offline_experiment(agent, num_trials, report_every=15, dynamic_viz=False):
     print(f'Completed {num_trials} in {(time()-start):.5}s')
 
 if __name__ == '__main__':
+    offline_experiment(
+        agent=DumbAgent(),
+        num_trials=5000, 
+        report_every=500,
+        dynamic_viz=False
+    )
     # offline_experiment(
     #     agent=REINFORCEMonteCarloPolicyGradientAgent(), \
     #     num_trials=10000, \
@@ -45,9 +53,9 @@ if __name__ == '__main__':
     #     report_every=50,
     #     dynamic_viz=False
     # )
-    offline_experiment(
-        agent=TDApproxAgent(),
-        num_trials=500000, 
-        report_every=50,
-        dynamic_viz=False
-    )
+    # offline_experiment(
+    #     agent=TDApproxAgent(),
+    #     num_trials=500000, 
+    #     report_every=50,
+    #     dynamic_viz=False
+    # )
