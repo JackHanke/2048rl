@@ -4,6 +4,7 @@ from macht.macht.term import main
 from statistics import mean
 from game.gameof2048 import Gameof2048
 from agents.dumbagent import DumbAgent
+from agents.tdagent import TDApproxAgent
 
 def online_experiment(agent, num_trials, report_every, dynamic_viz=False):
     scores = []
@@ -12,6 +13,7 @@ def online_experiment(agent, num_trials, report_every, dynamic_viz=False):
         game = Gameof2048(agent=agent)
         final_score = game.start()
         scores.append(final_score)
+        # running_avg = mean(scores)
         running_avg = mean(scores[(-1*report_every):])
         if dynamic_viz and trial_num % report_every == 0:
             # plt.subplot(2, 2, 1)
@@ -29,9 +31,17 @@ def online_experiment(agent, num_trials, report_every, dynamic_viz=False):
     print(f'Completed {num_trials} in {(time()-start):.5}s')
 
 if __name__ == '__main__':
+    # online_experiment(
+    #     agent=DumbAgent(),
+    #     num_trials=50000, 
+    #     report_every=500,
+    #     dynamic_viz=False
+    # ) # 58.104s for 5000 games
     online_experiment(
-        agent=DumbAgent(),
-        num_trials=5000, 
-        report_every=500,
+        agent=TDApproxAgent(),
+        num_trials=500000, 
+        report_every=300,
         dynamic_viz=False
-    ) # 58.104s for 5000 games
+    ) 
+
+

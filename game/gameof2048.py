@@ -146,6 +146,7 @@ class Gameof2048:
         self.agent = agent
 
     def start(self, verbose=False):
+        afterstate = self.board.board
         self.board.start()
         if self.agent.type == 'human': print(self.board)
         while not self.game_over:
@@ -155,8 +156,22 @@ class Gameof2048:
                 while (direction not in self.board.legal_moves) or (direction not in (0,1,2,3)):
                     direction = int(input('Enter 0 (Up) 1 (Right) 2 (Down) 3 (Left)\n'))
             else:
-                direction = self.agent.choose()
-                self.agent.update()
+
+                afterstates = []
+                for action_emb in self.board.legal_moves:
+                    temp_afterstate, reward = self.board.move_tiles(action_emb, apply=False)
+                    afterstates.append((action_emb, reward, temp_afterstate))
+                direction = self.agent.choose(
+                    state=self.board.board,
+                    afterstates=afterstates
+                )
+                self.agent.update(
+                    afterstate=afterstate,
+                    state=self.board.board,
+                    chosen_action=direction,
+                    afterstates=afterstates
+                )
+
             afterstate, reward = self.board.move_tiles(direction, apply=True)
             self.game_over = self.board.spawn_tile()
             self.board.score += reward
