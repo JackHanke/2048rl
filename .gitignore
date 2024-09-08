@@ -1,2 +1,3 @@
 2048venv
 *.pyc
+*.json
