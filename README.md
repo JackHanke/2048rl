@@ -3,6 +3,7 @@
 This is an unofficial fork of the [Macht repo](https://github.com/rolfmorel/macht), a Python clone of 2048, for learning various Reinforcement Learning techniques. Another resource was [this comprehensive review](https://arxiv.org/pdf/2212.11087) of the current state of 2048 RL Work as of 2023. 
 
 ## Structure of Repo
+The `game` directory stores the `gameof2048.py` file that implements the game logic. 
 The `agents` directory stores custom agent implementations, and are partially composed of classes from the `models` and `functions` directories.
 The `experiments` directory stores experiments for different types of agents
 
@@ -15,8 +16,14 @@ The `experiments` directory stores experiments for different types of agents
     - Episodic, the game eventually ends
 
 - Code:
-    - Implement grid search for various params
+    - Actually get an agent to learn anything
+        - Make sure afterstates and rewards are calculated correctly
+        - Make sure tuples are reasonable
+    - Implement "watch agent play" feature
     - Implement agent save feature 
+    - Implement grid search for various params
+    - Implement highest tile reached 
+    - Implement save particulaly good game
 
 - Make visual for 2 or 3 games side by side with caption, hook up finished agent to [original repo](https://github.com/gabrielecirulli/2048)
 

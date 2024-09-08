@@ -145,7 +145,7 @@ class Gameof2048:
         self.board = Board()
         self.agent = agent
 
-    def start(self, verbose=False):
+    def play(self, verbose=False):
         afterstate = self.board.board
         self.board.start()
         if self.agent.type == 'human': print(self.board)
@@ -161,10 +161,15 @@ class Gameof2048:
                 for action_emb in self.board.legal_moves:
                     temp_afterstate, reward = self.board.move_tiles(action_emb, apply=False)
                     afterstates.append((action_emb, reward, temp_afterstate))
+                # TODO remove
+                # print('state:')
+                # print(self.board.board)
                 direction = self.agent.choose(
                     state=self.board.board,
                     afterstates=afterstates
                 )
+                # print(f'agent chose {direction}')
+                # input('>>>')
                 self.agent.update(
                     afterstate=afterstate,
                     state=self.board.board,
