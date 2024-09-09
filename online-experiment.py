@@ -8,6 +8,7 @@ from agents.tdagent import TDApproxAgent
 from agents.greedy import GreedyAgent
 
 def online_experiment(agent, num_trials, report_every, dynamic_viz=False, save=False):
+    print(f'Running experiment with {agent.name}...')
     scores = []
     start = time()
     for trial_num in range(num_trials):
@@ -37,25 +38,13 @@ def online_experiment(agent, num_trials, report_every, dynamic_viz=False, save=F
     print(f'Completed {num_trials} in {(time()-start):.5}s')
 
 if __name__ == '__main__':
-    # online_experiment(
-    #     agent=DumbAgent(),
-    #     num_trials=50000, 
-    #     report_every=500,
-    #     dynamic_viz=False
-    # ) # 58.104s for 5000 games
-    online_experiment(
-        agent=GreedyAgent(),
-        num_trials=50000, 
-        report_every=100,
-        dynamic_viz=True,
-        save=False
-    ) # about 2000 points
-    # online_experiment(
-    #     agent=TDApproxAgent(),
-    #     num_trials=50000, 
-    #     report_every=100,
-    #     dynamic_viz=True,
-    #     save=False
-    # ) 
+    for agent in [TDApproxAgent()]:
+        online_experiment(
+            agent=agent,
+            num_trials=50000, 
+            report_every=100,
+            dynamic_viz=False,
+            save=False
+        ) 
 
 

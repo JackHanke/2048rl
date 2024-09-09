@@ -15,7 +15,7 @@ class TDApproxAgent:
         self.lmbda = 0
         self.n_step = 1
         self.discounting_param = 1
-        self.learning_rate = 0.1
+        self.learning_rate = 0.0025
         self.reward_scale = 1
         self.staterepfunc = identity_rep
         self.state_value_function_approx = nTupleNetwork()
