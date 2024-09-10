@@ -8,18 +8,19 @@ from statistics import mean, variance
 import numpy as np
 import json
 import random
+from functions.tuplefuncs import *
 
 class TDApproxAgent:
-    def __init__(self):
+    def __init__(self, lmbda, n_step, discounting_param, reward_scale, learning_rate):
         self.name = 'TD(0) Approx Agent'
         self.type = 'online'
-        self.lmbda = 0
-        self.n_step = 1
-        self.discounting_param = 1
-        self.learning_rate = 0.001
-        self.reward_scale = 1
+        self.lmbda = lmbda
+        self.n_step = n_step
+        self.discounting_param = discounting_param
+        self.reward_scale = reward_scale
+        self.learning_rate = learning_rate
         self.staterepfunc = identity_rep
-        self.state_value_function_approx = nTupleNetwork()
+        self.state_value_function_approx = nTupleNetwork(tuple_map_class=TupleMap1())
         self.temp_val = 0 # stores r + V(s') to avoid extra eval
         self.delta_history = []
         self.reward_history = []
@@ -49,14 +50,6 @@ class TDApproxAgent:
     def update(self, afterstate, state, chosen_action, afterstates):
         state_rep = self.staterepfunc(state)
         val_old_afterstate = self.state_value_function_approx.forward(afterstate) # TODO fix this re-eval
-        # TODO remove
-        for tup in afterstates:
-            if tup[0] == chosen_action:
-                reward = tup[1]
-        self.reward_history.append(reward)
-        self.delta_history.append(reward - (self.temp_val))
-        if random.random() < 0.0001: print(variance(self.delta_history)/variance(self.reward_history))
-        # if len(self.reward_history) > 1: print(variance(self.delta_history)/variance(self.reward_history))
         self.state_value_function_approx.backward(
             activation = afterstate,
             label = (self.temp_val - val_old_afterstate),

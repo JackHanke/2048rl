@@ -7,13 +7,13 @@ from agents.dumbagent import DumbAgent
 from agents.tdagent import TDApproxAgent
 from agents.greedy import GreedyAgent
 
-def online_experiment(agent, num_trials, report_every, dynamic_viz=False, save=False):
+def online_experiment(agent, num_trials, report_every, dynamic_viz=False, save=False, watch=False):
     print(f'Running experiment with {agent.name}...')
     start = time()
     scores = []
     for trial_num in range(num_trials):
         try:
-            game = Gameof2048(agent=agent)
+            game = Gameof2048(agent=agent, watch=watch)
             final_score = game.play()
         except KeyboardInterrupt:
             if save: agent.save(loc=f'models/{agent.name}-model.json')
@@ -33,29 +33,40 @@ def online_experiment(agent, num_trials, report_every, dynamic_viz=False, save=F
             plt.pause(0.00001)
         else:
             if trial_num % report_every == 0: 
-                print(f'Running avg after {trial_num} games = {running_avg:.1f}')
+                print(f'Trial {trial_num} achieved {final_score}')
+                # print(f'Running avg after {trial_num} games = {running_avg:.1f}')
     if dynamic_viz: plt.show()
     print(f'Completed {num_trials} in {(time()-start):.5}s')
     return scores
 
 if __name__ == '__main__':
-    agent_repeats = 30
-    num_trials = 25
+    agent_repeats = 1
+    num_trials = 10
     avg_scores = [0 for _ in range(num_trials)]
     for _ in range(agent_repeats):
-        for agent in [TDApproxAgent()]:
-            scores = online_experiment(
-                agent=agent,
-                num_trials=num_trials, 
-                report_every=1,
-                dynamic_viz=False,
-                save=False
-            )
-            for index, val in enumerate(scores):
-                avg_scores[index] += val/agent_repeats
+        for lr in [0.001]:
+            for agent in [
+                TDApproxAgent(
+                    lmbda=1, 
+                    n_step=1, 
+                    discounting_param=1, 
+                    reward_scale=1, 
+                    learning_rate=lr
+                )
+                ]:
+                scores = online_experiment(
+                    agent=agent,
+                    num_trials=num_trials, 
+                    report_every=50,
+                    dynamic_viz=True,
+                    save=False,
+                    watch=False
+                )
+                for index, val in enumerate(scores):
+                    avg_scores[index] += val/agent_repeats
 
-    plt.scatter([i+1 for i in range(num_trials)], avg_scores, color='green')
-    plt.show()
+    # plt.scatter([i+1 for i in range(num_trials)], avg_scores, color='green')
+    # plt.show()
         
 
 

@@ -2,6 +2,8 @@ import numpy as np
 import random
 from os import system
 from copy import deepcopy
+from time import sleep
+from math import log
 
 def shiftLeft(board):
     # remove 0's in between numbers
@@ -24,12 +26,16 @@ def shiftRight(board):
                 count += 1
         board[i] = [np.int32(0) for _ in range(4-count)] + nums
 
+def log_modified(x, b=2):
+    if x == 0: return 0
+    return log(x, b)
+
 class Board:
     def __init__(self):
         self.board = np.zeros((4,4), dtype=np.int32)
         self.score = 0
         self.legal_moves = [i for i in range(4)]
-        # TODO largest tile tracking
+        self.highest_tile = 0
 
     def __repr__(self): 
         system('clear')
@@ -37,10 +43,10 @@ class Board:
         for i in range(4):
             row_str = '|'
             for j in range(4):
-                row_str += ' ' + str(int(self.board[i][j])) + ' '
+                row_str += ' ' + str(int(log_modified(self.board[i][j]))) + ' '
             return_str += row_str + '|\n'
         return_str += '|------------|\n' 
-        return_str += f'| Score = {self.score}  |\n'
+        return_str += f'     {self.score}  \n'
         return_str += '|------------|\n|      0     |\n|    3 . 1   |\n|      2     |\n|------------|'
         return return_str
         
@@ -88,6 +94,7 @@ class Board:
                     board[i][j] *= 2
                     board[i][j + 1] = np.int32(0)
                     j = 0
+                    if board[i][j] > self.highest_tile: self.highest_tile = board[i][j]
         # final shift
         shiftLeft(board)
         if apply: self.board = board
@@ -106,6 +113,7 @@ class Board:
                     board[i][j] *= 2
                     board[i][j - 1] = np.int32(0)
                     j = 0
+                    if board[i][j] > self.highest_tile: self.highest_tile = board[i][j]
         # final shift
         shiftRight(board)
         if apply: self.board = board
@@ -139,27 +147,26 @@ class Board:
         return afterstate, int(score)
 
 class Gameof2048:
-    def __init__(self, agent):
+    def __init__(self, agent, watch):
         self.game_over = False
         self.board = Board()
         self.agent = agent
+        self.watch=watch
 
     def play(self, verbose=False):
         afterstate = self.board.board
         self.board.start()
-        if self.agent.type == 'human': print(self.board)
+        if self.agent.type == 'human' or self.watch: print(self.board)
         while not self.game_over:
             if self.agent.type == 'human':
                 direction = int(input()) # TODO type error handling
                 while (direction not in self.board.legal_moves) or (direction not in (0,1,2,3)):
                     direction = int(input('Enter 0 (Up) 1 (Right) 2 (Down) 3 (Left)\n'))
             else:
-
                 afterstates = []
                 for action_emb in self.board.legal_moves:
                     temp_afterstate, reward = self.board.move_tiles(action_emb, apply=False)
                     afterstates.append((action_emb, reward, temp_afterstate))
-                # TODO remove
                 direction = self.agent.choose(
                     state=self.board.board,
                     afterstates=afterstates
@@ -172,8 +179,11 @@ class Gameof2048:
                 )
 
             afterstate, reward = self.board.move_tiles(direction, apply=True)
+            if self.board.highest_tile == 2048: print(f'2048 reached!')
             self.game_over = self.board.spawn_tile()
             self.board.score += reward
-            if self.agent.type == 'human': print(self.board)
+            if self.agent.type == 'human' or self.watch: print(self.board)
+            if self.watch: print(f'Agent chose: {direction}')
+            if self.watch: sleep(0.1)
         if verbose: print(f'Final Score = {self.board.score}')
         return self.board.score    
