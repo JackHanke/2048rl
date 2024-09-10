@@ -4,9 +4,10 @@ from functions.activations import *
 from models.linear import Linear
 from functions.repfuncs import identity_rep, simple_exponent_state_rep
 from functions.rlfuncs import epsilon_greedy, better_argmax_dict
-from statistics import mean
+from statistics import mean, variance
 import numpy as np
 import json
+import random
 
 class TDApproxAgent:
     def __init__(self):
@@ -15,11 +16,13 @@ class TDApproxAgent:
         self.lmbda = 0
         self.n_step = 1
         self.discounting_param = 1
-        self.learning_rate = 0.0025
+        self.learning_rate = 0.001
         self.reward_scale = 1
         self.staterepfunc = identity_rep
         self.state_value_function_approx = nTupleNetwork()
         self.temp_val = 0 # stores r + V(s') to avoid extra eval
+        self.delta_history = []
+        self.reward_history = []
 
     def save(self, loc):
         with open(loc, 'w') as fout:
@@ -34,9 +37,9 @@ class TDApproxAgent:
         predicted_rewards_for_each_action = {}
         # valid_moves is a dict with legal actions as keys as a list of tuples of (reward, future states (with tiles spawned in) and their respective probs)
         for tup in afterstates:
-            pred_val = tup[1] + self.state_value_function_approx.forward(self.staterepfunc(tup[2]))
-            # print(tup)
-            # print(f'agent preds (r = {tup[1]}) + (V(af s) = {pred_val-tup[1]}) = {pred_val}')
+            pred_reward = tup[1]
+            pred_stateval = self.state_value_function_approx.forward(self.staterepfunc(tup[2]))
+            pred_val = pred_reward + pred_stateval
             predicted_rewards_for_each_action[tup[0]] = pred_val
         try:
             chosen_action = better_argmax_dict(predicted_rewards_for_each_action)
@@ -51,6 +54,15 @@ class TDApproxAgent:
     def update(self, afterstate, state, chosen_action, afterstates):
         state_rep = self.staterepfunc(state)
         val_old_afterstate = self.state_value_function_approx.forward(afterstate) # TODO fix this re-eval
+        # TODO remove
+        for tup in afterstates:
+            if tup[0] == chosen_action:
+                reward = tup[1]
+        self.reward_history.append(reward)
+        self.delta_history.append(reward - (self.temp_val))
+        if random.random() < 0.0001: print(variance(self.delta_history)/variance(self.reward_history))
+        # if len(self.reward_history) > 1: print(variance(self.delta_history)/variance(self.reward_history))
+
         self.state_value_function_approx.backward(
             activation = afterstate,
             label = (self.temp_val - val_old_afterstate),

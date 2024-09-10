@@ -1,7 +1,6 @@
 import numpy as np
 import random
 from os import system
-from agents.humanagent import HumanAgent
 from copy import deepcopy
 
 def shiftLeft(board):
@@ -183,8 +182,3 @@ class Gameof2048:
             if self.agent.type == 'human': print(self.board)
         if verbose: print(f'Final Score = {self.board.score}')
         return self.board.score    
-
-if __name__ == '__main__':
-    # TODO make sure only legal moves can be made
-    game = Gameof2048(agent=HumanAgent())
-    game.start()
