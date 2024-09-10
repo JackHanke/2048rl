@@ -150,7 +150,6 @@ class Gameof2048:
         if self.agent.type == 'human': print(self.board)
         while not self.game_over:
             if self.agent.type == 'human':
-                # print(f'legal moves = {self.board.legal_moves}')
                 direction = int(input()) # TODO type error handling
                 while (direction not in self.board.legal_moves) or (direction not in (0,1,2,3)):
                     direction = int(input('Enter 0 (Up) 1 (Right) 2 (Down) 3 (Left)\n'))
@@ -161,14 +160,10 @@ class Gameof2048:
                     temp_afterstate, reward = self.board.move_tiles(action_emb, apply=False)
                     afterstates.append((action_emb, reward, temp_afterstate))
                 # TODO remove
-                # print('state:')
-                # print(self.board.board)
                 direction = self.agent.choose(
                     state=self.board.board,
                     afterstates=afterstates
                 )
-                # print(f'agent chose {direction}')
-                # input('>>>')
                 self.agent.update(
                     afterstate=afterstate,
                     state=self.board.board,

@@ -26,29 +26,24 @@ class TDApproxAgent:
 
     def save(self, loc):
         with open(loc, 'w') as fout:
-            json.dump(your_list_of_dict, fout)
+            json.dump(self.state_value_function_approx.lookup_array, fout)
 
     def load(self, loc):
         with open(loc, 'r') as fin:
-            json.load(your_list_of_dict, fin)
+            json.load(self.state_value_function_approx.lookup_array, fin)
 
     def choose(self, state, afterstates):
         state_rep = self.staterepfunc(state)
         predicted_rewards_for_each_action = {}
         # valid_moves is a dict with legal actions as keys as a list of tuples of (reward, future states (with tiles spawned in) and their respective probs)
         for tup in afterstates:
-            pred_reward = tup[1]
+            pred_reward = tup[1]/self.reward_scale
             pred_stateval = self.state_value_function_approx.forward(self.staterepfunc(tup[2]))
-            pred_val = pred_reward + pred_stateval
+            pred_val = pred_reward + self.discounting_param*pred_stateval
             predicted_rewards_for_each_action[tup[0]] = pred_val
-        try:
-            chosen_action = better_argmax_dict(predicted_rewards_for_each_action)
-            self.temp_val = predicted_rewards_for_each_action[chosen_action]
-        except Exception as e:
-            print('errored at this state:')
-            print(e)
-            print(predicted_rewards_for_each_action)
-            print(state)
+
+        chosen_action = better_argmax_dict(predicted_rewards_for_each_action)
+        self.temp_val = predicted_rewards_for_each_action[chosen_action]
         return chosen_action
 
     def update(self, afterstate, state, chosen_action, afterstates):
@@ -62,7 +57,6 @@ class TDApproxAgent:
         self.delta_history.append(reward - (self.temp_val))
         if random.random() < 0.0001: print(variance(self.delta_history)/variance(self.reward_history))
         # if len(self.reward_history) > 1: print(variance(self.delta_history)/variance(self.reward_history))
-
         self.state_value_function_approx.backward(
             activation = afterstate,
             label = (self.temp_val - val_old_afterstate),

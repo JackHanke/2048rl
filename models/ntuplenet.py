@@ -1,5 +1,5 @@
 import numpy as np
-from functions.tuplefuncs import TupleMap1, TupleMap2, TupleMap3
+from functions.tuplefuncs import *
 
 class nTupleNetwork:
     def __init__(self):
@@ -34,11 +34,4 @@ class nTupleNetwork:
 
             # self.lookup_array[tup_index][tup] += (delta_term/abs(delta_term))*min(abs(delta_term), 1000)
             self.lookup_array[tup_index][tup] += delta_term
-            if np.isnan(self.lookup_array[tup_index][tup]):
-                print(f' temp val = {temp_val}')
-                print(tup)
-                print(f' delta term = {delta_term}')
-                input('Press ENTER to continue with the bad code')
-
-
 
