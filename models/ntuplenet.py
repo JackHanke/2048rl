@@ -22,6 +22,7 @@ class nTupleNetwork:
                     self.lookup_array[tup_index][tup] = weight  
                 afterstate_val += weight
                 count += 1
+        # return (afterstate_val)
         return (afterstate_val/count)
 
     def backward(self, activation, label, learning_rate):

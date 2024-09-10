@@ -9,8 +9,8 @@ from agents.greedy import GreedyAgent
 
 def online_experiment(agent, num_trials, report_every, dynamic_viz=False, save=False):
     print(f'Running experiment with {agent.name}...')
-    scores = []
     start = time()
+    scores = []
     for trial_num in range(num_trials):
         try:
             game = Gameof2048(agent=agent)
@@ -36,15 +36,26 @@ def online_experiment(agent, num_trials, report_every, dynamic_viz=False, save=F
                 print(f'Running avg after {trial_num} games = {running_avg:.1f}')
     if dynamic_viz: plt.show()
     print(f'Completed {num_trials} in {(time()-start):.5}s')
+    return scores
 
 if __name__ == '__main__':
-    for agent in [TDApproxAgent()]:
-        online_experiment(
-            agent=agent,
-            num_trials=50000, 
-            report_every=100,
-            dynamic_viz=False,
-            save=False
-        ) 
+    agent_repeats = 30
+    num_trials = 25
+    avg_scores = [0 for _ in range(num_trials)]
+    for _ in range(agent_repeats):
+        for agent in [TDApproxAgent()]:
+            scores = online_experiment(
+                agent=agent,
+                num_trials=num_trials, 
+                report_every=1,
+                dynamic_viz=False,
+                save=False
+            )
+            for index, val in enumerate(scores):
+                avg_scores[index] += val/agent_repeats
+
+    plt.scatter([i+1 for i in range(num_trials)], avg_scores, color='green')
+    plt.show()
+        
 
 
