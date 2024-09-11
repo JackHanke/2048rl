@@ -4,7 +4,6 @@ class nTupleNetwork:
     def __init__(self, tuple_map_class):
         self.tuple_map_class = tuple_map_class
         self.num_tuples = self.tuple_map_class.num_tuples
-        self.num_tuple_reps = self.tuple_map_class.num_tuple_reps
         self.tuple_map = self.tuple_map_class.tuple_map
         self.lookup_array = [{} for _ in range(self.num_tuples)]
 
@@ -21,7 +20,6 @@ class nTupleNetwork:
                     self.lookup_array[tup_index][tup] = weight  
                 afterstate_val += weight
                 count += 1
-        # return (afterstate_val)
         return (afterstate_val/count)
 
     def backward(self, activation, label, learning_rate):

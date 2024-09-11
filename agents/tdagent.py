@@ -36,13 +36,19 @@ class TDApproxAgent:
     def choose(self, state, afterstates):
         state_rep = self.staterepfunc(state)
         predicted_rewards_for_each_action = {}
-        # valid_moves is a dict with legal actions as keys as a list of tuples of (reward, future states (with tiles spawned in) and their respective probs)
+        # afterstates contains a lists of tuples of (action, reward, afterstate)
         for tup in afterstates:
             pred_reward = tup[1]/self.reward_scale
             pred_stateval = self.state_value_function_approx.forward(self.staterepfunc(tup[2]))
             pred_val = pred_reward + self.discounting_param*pred_stateval
             predicted_rewards_for_each_action[tup[0]] = pred_val
 
+        # chosen_action = 0
+        # best_reward = -1
+        # for key, val in predicted_rewards_for_each_action.items():
+        #     if val > best_reward:
+        #         best_reward = val
+        #         chosen_action = key
         chosen_action = better_argmax_dict(predicted_rewards_for_each_action)
         self.temp_val = predicted_rewards_for_each_action[chosen_action]
         return chosen_action

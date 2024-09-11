@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 from time import time
 from macht.macht.term import main
-from statistics import mean
 from game.gameof2048 import Gameof2048
 from agents.dumbagent import DumbAgent
 from agents.tdagent import TDApproxAgent
@@ -15,13 +14,26 @@ def online_experiment(agent, num_trials, report_every, dynamic_viz=False, save=F
         try:
             game = Gameof2048(agent=agent, watch=watch)
             final_score = game.play()
+
+            # for tup_index, tup in enumerate(game.gameplay):
+            #     if (tup_index % 4) ==0:
+            #         print('afterstate:')
+            #         print(tup)
+            #     if (tup_index % 4) ==1:
+            #         print('state:')
+            #         print(tup)
+            #     if (tup_index % 4) ==2:
+            #         print(f'action: {tup}', end=' ')
+            #     if (tup_index % 4) ==3:
+            #         print(f'reward: {tup}')
+            # input()
         except KeyboardInterrupt:
             if save: agent.save(loc=f'models/{agent.name}-model.json')
             return -1
 
         scores.append(final_score)
-        running_avg = mean(scores)
-        # running_avg = mean(scores[(-1*report_every):])
+        # running_avg = sum(scores)/len(scores)
+        running_avg = sum(scores[(-5*report_every):])/len(scores[(-5*report_every):])
         if dynamic_viz and trial_num % report_every == 0:
             # plt.subplot(2, 2, 1)
             # plt.subplot(2, 2, 2)
@@ -41,10 +53,10 @@ def online_experiment(agent, num_trials, report_every, dynamic_viz=False, save=F
 
 if __name__ == '__main__':
     agent_repeats = 1
-    num_trials = 10
+    num_trials = 10000
     avg_scores = [0 for _ in range(num_trials)]
     for _ in range(agent_repeats):
-        for lr in [0.001]:
+        for lr in [0.1]:
             for agent in [
                 TDApproxAgent(
                     lmbda=1, 
@@ -57,7 +69,7 @@ if __name__ == '__main__':
                 scores = online_experiment(
                     agent=agent,
                     num_trials=num_trials, 
-                    report_every=50,
+                    report_every=100,
                     dynamic_viz=True,
                     save=False,
                     watch=False
