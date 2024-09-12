@@ -44,7 +44,6 @@ class Gameof2048:
             afterstate, reward = self.board.move_tiles(direction, apply=True)
 
             self.gameplay += [direction, reward, deepcopy(afterstate)]
-            if self.board.highest_tile == 2048: print(f'2048 reached!')
             self.game_over = self.board.spawn_tile()
             self.board.score += reward
             if self.agent.type == 'human' or self.watch: print(self.board)

@@ -2,7 +2,7 @@ import numpy as np
 import random
 from os import system
 from copy import deepcopy
-from math import log
+from functions.repfuncs import log_modified
 
 def shiftLeft(board):
     # remove 0's in between numbers
@@ -23,10 +23,6 @@ def shiftRight(board):
                 nums.append(board[i][j])
                 count += 1
         board[i] = [np.int32(0) for _ in range(4-count)] + nums
-
-def log_modified(x, b=2):
-    if x == 0: return 0
-    return log(x, b)
 
 class Board:
     def __init__(self, given_board=None):

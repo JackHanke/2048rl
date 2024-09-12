@@ -1,49 +1,52 @@
-# Reinforcement Learning for 2048 Game
+# Reinforcement Learning for 2048
+A custom python clone of 2048, along with various custom reinforcement learning agents to play the game. 
 
-This is an unofficial fork of the [Macht repo](https://github.com/rolfmorel/macht), a Python clone of 2048, for learning various Reinforcement Learning techniques. Another resource was [this comprehensive review](https://arxiv.org/pdf/2212.11087) of the current state of 2048 RL Work as of 2023. 
+In reinforcement learning terms, 2048 is an episodic game with dense rewards, in which the actions are swiping up, down, left, and right, the states are the boards right after the swipe, and the afterstates are the board after a new tile spawns in. 
+
+The statistics tracked for a specific agents are listed below. Each statistic is an average over x games
+- Performance Stats:
+    - Average score achieved
+    - Highest score achieved
+    - Average highest tile
+    - Highest tile achieved
+    - Percentage of games that reach 2048 tile
+- Training Stats:
+    - Average number of games to first 2048 tile (in training!)
+
+The agents that resulted in significant performance are listed below.
+- A TD(0) Agent using an n-tuple network to evaluate aterstates
+    - Tuple design= TupleMap1 in `functions/tuplefuncs.py`, Learning rate=, achieves:
+
+20.2% of games reached 2048, 1.5% reached 4196. The highest score was 68840. 100,000 games in 6.1 hrs
 
 ## Structure of Repo
-The `game` directory stores the `gameof2048.py` file that implements the game logic. 
+The `game` directory stores the `gameof2048.py` file that implements the game. 
 The `agents` directory stores custom agent implementations, and are partially composed of classes from the `models` and `functions` directories.
 The `experiments` directory stores experiments for different types of agents
 
-## TODO
-- Classify the problem:
-    - The states are the board states. States are transformed into different representations with functions in `functions/rlfuncs.py`.
-    - The actions are the legal moves in the position (left,right,up,down). Use invalid action masking for policy gradient methods!
-    - The reward for an action is the score delta obtained from a specific move
-    - The return is the predicted sum of future rewards. This is the predicted total score. Is discounting appropriate? Should the reward be normalized?
-    - Episodic, the game eventually ends
+## Resources:
+The various resources used for this project and how they were used are listed below. 
+- [Temporal Difference Learning of N-Tuple Networks for the Game 2048](https://www.researchdgate.net/publication/263198856_Temporal_Difference_Learning_of_N-Tuple_Networks_for_the_Game_2048) for a 
+- [Python implementation of above paper](https://github.com/alanhyue/RL-2048-with-n-tuple-network) for sanity checks.
+- [On Reinforcement Learning for the Game of 2048](https://arxiv.org/pdf/2212.11087) for an overview of RL techniques used to play 2048. 
+- [Reinforcement Learning: An Introduction](http://incompleteideas.net/book/the-book.html) by Sutton and Barto, for a comprehensive introdution to the field. 
+- [The original 2048 repository](https://github.com/gabrielecirulli/2048) for the visualization and the original popularization of the game. 
+- [The macht repository](https://github.com/rolfmorel/macht) for testing agents before I implemented a custom game.
 
-- Code:
-    - Actually get an agent to learn anything
-        - Make sure afterstates and rewards are calculated correctly
-        - Make sure tuples are reasonable
-    - Implement "watch agent play" feature
-    - Implement agent save feature 
-    - Implement grid search for various params
-    - Implement highest tile reached 
-    - Implement save particulaly good game
-
+## Project TODOs
+- Implement "watch agent play" feature
+- Implement grid search for various params
+- Saved models directory with version number and hyperparams recording, add this to gitignore
+- Num parameters feature in ntuplenet
+- Make stats section of README a table
 - Make visual for 2 or 3 games side by side with caption, hook up finished agent to [original repo](https://github.com/gabrielecirulli/2048)
+- Linkedin Post with explan
+    I wrote a reinforcement learning agent from scratch to play 2048. Instead of telling an algorithm how to win the game, an RL agent is just told to get a high score. It learns to achive a high score through playing many games. 
 
-- Statistics I would like to track for specific agents are:
-    - Performance Stats:
-        - Average score achieved
-        - Highest score achieved
-        - Average highest tile
-        - Highest tile achieved
-        - Percentage of games that reach 2048 tile
-    - Training Stats:
-        - Average number of games to first 2048 tile (in training!)
+    While playing, the agent achieves the 2048 tile for the first time during its x-th game. After playing y games, the highest tile is achieves is z, and achives this in about z% of games. 
 
-- Post with explan
-    This is a video of a custom reinforcement learning agent I wrote playing 2048. Instead of telling the algorithm how to win the game, you just tell it to get a high score. It plays the game and learns what behaviors maximizes its chance of obtaining a high score.
+    This is neither the best way to implement a 2048 bot, nor the best use case for RL. I chose this project as an academic exersize and because I like the game. Implementation and performance details, as well as the source code, can be found on my GitHub.
+- Small YT vid
 
-    After x games, the agent achieves the 2048 tile for the first time. The highest tile is achieves is , and achives this in about z% of games. 
-    After y games, the agent achieved an average high score, and an all time best score of 
-
-    This is neither the best way to implement a 2048 bot, nor the best use case for deep RL. I chose this project as an academic exersize while reading Reinforcement Learning: An Introduction by Sutton and Barto, and because I like the game. The code can be found at my repo. 
-
-
-
+## Notes
+- To achieve tile x, you need at minimum to have achieved x(log_2(x)-2) points, MUCH more likely to be around x(log_2(x)-1). This means only games of 20k+ points could have achieved 2048, etc 

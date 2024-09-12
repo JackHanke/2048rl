@@ -1,3 +1,6 @@
 2048venv
 *.pyc
 *.json
+
+# hide 
+agents/TDZeroApproxAgent/*.json

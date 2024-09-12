@@ -2,25 +2,32 @@ import matplotlib.pyplot as plt
 from time import time
 from game.gameof2048 import Gameof2048
 from agents.dumbagent import DumbAgent
+from agents.tdagent import TDApproxAgent
 from agents.greedy import GreedyAgent
-from agents.TDZeroApproxAgent.tdagent import TDApproxAgent
+from math import log
+# import json
 
-def online_experiment(agent, num_trials, report_every, dynamic_viz=False, save=False, watch=False):
-    print(f'Running experiment with {agent.name}...')
+def benchmark(agent, num_games, report_every, dynamic_viz=False, save=False, watch=False):
+    print(f'Benchmarking {agent.name}...')
     start = time()
     scores = []
-    for trial_num in range(num_trials):
+    best_tile_array = [0 for _ in range(18)]
+    best_score = 0
+    for trial_num in range(num_games):
         try:
             game = Gameof2048(agent=agent, watch=watch)
             final_score = game.play()
-        # except KeyboardInterrupt:
+            if final_score > best_score:
+                best_score = final_score
+                best_gameplay = game.gameplay
+            best_tile_array[int(log(game.board.highest_tile, 2))] += (1/num_games)
         except KeyboardInterrupt:
             if save: agent.save(loc=f'models/{agent.name}-model.json')
             return -1
 
         scores.append(final_score)
         # running_avg = sum(scores)/len(scores)
-        running_avg = sum(scores[(-5*report_every):])/len(scores[(-5*report_every):])
+        # running_avg = sum(scores[(-5*report_every):])/len(scores[(-5*report_every):])
         if dynamic_viz and trial_num % report_every == 0:
             # plt.subplot(2, 2, 1)
             # plt.subplot(2, 2, 2)
@@ -32,41 +39,38 @@ def online_experiment(agent, num_trials, report_every, dynamic_viz=False, save=F
             plt.pause(0.00001)
         else:
             if trial_num % report_every == 0: 
-                print(f'Trial {trial_num} achieved {final_score}, running av = {running_avg:.1f}, {((time()-start)/60):.4} mins')
+                print(f'Trial {trial_num} achieved {final_score}')
+                # print(f'Running avg after {trial_num} games = {running_avg:.1f}')
     if dynamic_viz: plt.show()
-    print(f'Trained on {num_trials} in {((time()-start)/3600):.2}hrs')
-    if save:
-        agent.save(loc=f'agents/{agent.name}/{agent.name}-model')
+    print(f'Benchmarked on {num_games} in {((time()-start)/3600):.2}hrs')
+    print(f'Average Performance = {sum(scores)/len(scores)}')
+    print(f'Best score achieved: {best_score}')
+    print(f'Best tiles prob = {best_tile_array}')
     return scores
 
 if __name__ == '__main__':
     agent_repeats = 1
-    num_trials = 10
-    avg_scores = [0 for _ in range(num_trials)]
+    num_games = 5000
+    avg_scores = [0 for _ in range(num_games)]
     for _ in range(agent_repeats):
-        for lr in [0.01]:
-            for agent in [
-                TDApproxAgent(
+        for lr in [0.05]:
+                agent = TDApproxAgent(
                     lmbda=1, 
                     n_step=1, 
                     discounting_param=1, 
                     reward_scale=1, 
-                    learning_rate=lr
+                    learning_rate=lr,
+                    load_loc=f'models/TDZeroApproxAgent-model.json' # TODO check this
                 )
-                ]:
-                scores = online_experiment(
+                scores = benchmark(
                     agent=agent,
-                    num_trials=num_trials, 
-                    report_every=500,
+                    num_games=num_games, 
+                    report_every=25,
                     dynamic_viz=False,
-                    save=True,
                     watch=False
                 )
                 for index, val in enumerate(scores):
                     avg_scores[index] += val/agent_repeats
 
-    # plt.scatter([i+1 for i in range(num_trials)], avg_scores, color='green')
+    # plt.scatter([i+1 for i in range(num_games)], avg_scores, color='green')
     # plt.show()
-        
-
-

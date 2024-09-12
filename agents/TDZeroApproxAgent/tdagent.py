@@ -11,8 +11,8 @@ import random
 from functions.tuplefuncs import *
 
 class TDApproxAgent:
-    def __init__(self, lmbda, n_step, discounting_param, reward_scale, learning_rate):
-        self.name = 'TD(0) Approx Agent'
+    def __init__(self, lmbda, n_step, discounting_param, reward_scale, learning_rate, load_loc=None):
+        self.name = 'TDZeroApproxAgent'
         self.type = 'online'
         self.lmbda = lmbda
         self.n_step = n_step
@@ -20,19 +20,40 @@ class TDApproxAgent:
         self.reward_scale = reward_scale
         self.learning_rate = learning_rate
         self.staterepfunc = identity_rep
-        self.state_value_function_approx = nTupleNetwork(tuple_map_class=TupleMap1())
+        self.load_loc = load_loc
+        self.state_value_function_approx = nTupleNetwork(tuple_map_class=TupleMap1(), load_loc=self.load_loc)
         self.temp_val = 0 # stores r + V(s') to avoid extra eval
         self.delta_history = []
         self.reward_history = []
 
     def save(self, loc):
-        with open(loc, 'w') as fout:
+        # TODO add movel versioning
+        
+        # model versioning
+        # model_ver = 0
+        # path_str = f'agents/{agent.name}/{agent.name}-model'
+        # while True:
+        #     try:
+        #         with open(path_str+'-'+str(model_ver)+'.json', 'r') as fout: 
+        #             pass
+        #         model_ver += 1
+        #     except FileNotFoundError:
+        #         agent.save(loc=path_str+'-'+str(model_ver))
+        #         break
+        
+        with open(loc+'.json', 'w') as fout:
             json.dump(self.state_value_function_approx.lookup_array, fout)
 
-    def load(self, loc):
-        with open(loc, 'r') as fin:
-            json.load(self.state_value_function_approx.lookup_array, fin)
-
+        with open(loc+'-params.json', 'w') as fout:
+            params_dict = {
+                "lmbda": self.lmbda,
+                "n_step": self.n_step,
+                "discounting_param": self.discounting_param,
+                "reward_scale": self.reward_scale,
+                "learning_rate": self.learning_rate
+            }
+            json.dump(params_dict, fout)
+        
     def choose(self, state, afterstates):
         state_rep = self.staterepfunc(state)
         predicted_rewards_for_each_action = {}
@@ -43,17 +64,12 @@ class TDApproxAgent:
             pred_val = pred_reward + self.discounting_param*pred_stateval
             predicted_rewards_for_each_action[tup[0]] = pred_val
 
-        # chosen_action = 0
-        # best_reward = -1
-        # for key, val in predicted_rewards_for_each_action.items():
-        #     if val > best_reward:
-        #         best_reward = val
-        #         chosen_action = key
         chosen_action = better_argmax_dict(predicted_rewards_for_each_action)
         self.temp_val = predicted_rewards_for_each_action[chosen_action]
         return chosen_action
 
     def update(self, afterstate, state, chosen_action, afterstates):
+        if self.load_loc is not None: return # skip updates for loaded in model
         state_rep = self.staterepfunc(state)
         val_old_afterstate = self.state_value_function_approx.forward(afterstate) # TODO fix this re-eval
         self.state_value_function_approx.backward(

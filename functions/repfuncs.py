@@ -1,5 +1,10 @@
 import numpy as np
+from math import log
 # custom implementation representation functions
+
+def log_modified(x, b=2):
+    if x == 0: return 0
+    return log(x, b)
 
 def identity_rep(grid):
     return grid
