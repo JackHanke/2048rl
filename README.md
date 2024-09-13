@@ -1,7 +1,7 @@
 # Reinforcement Learning for 2048
-A custom python clone of 2048, along with various custom reinforcement learning agents to play the game. 
+A custom python clone of 2048, along with various custom reinforcement learning agents to play the game.
 
-In reinforcement learning terms, 2048 is an episodic game with dense rewards, in which the actions are swiping up, down, left, and right, the states are the boards right after the swipe, and the afterstates are the board after a new tile spawns in. 
+In reinforcement learning terms, 2048 is an episodic game with dense rewards, in which the actions are swiping up, down, left, and right, the states are the boards right after the swipe, and the afterstates are the board after a new tile spawns in.
 
 The statistics tracked for a specific agents are listed below. Each statistic is an average over x games
 - Performance Stats:
@@ -18,15 +18,11 @@ The agents that resulted in significant performance are listed below.
     - Tuple design= TupleMap1 in `functions/tuplefuncs.py`, Learning rate=, achieves:
 
 20.2% of games reached 2048, 1.5% reached 4196. The highest score was 68840. 100,000 games in 6.1 hrs
-
-## Structure of Repo
-The `game` directory stores the `gameof2048.py` file that implements the game. 
-The `agents` directory stores custom agent implementations, and are partially composed of classes from the `models` and `functions` directories.
-The `experiments` directory stores experiments for different types of agents
+49.1% of gamer reach 2048, 1.5% reached 4196. The highest score war 56208. 103,00 games in 11 hours. 92 MB of params
 
 ## Resources:
 The various resources used for this project and how they were used are listed below. 
-- [Temporal Difference Learning of N-Tuple Networks for the Game 2048](https://www.researchdgate.net/publication/263198856_Temporal_Difference_Learning_of_N-Tuple_Networks_for_the_Game_2048) for a 
+- [Temporal Difference Learning of N-Tuple Networks for the Game 2048](https://www.cs.put.poznan.pl/wjaskowski/pub/papers/Szubert2014_2048.pdf) for a 
 - [Python implementation of above paper](https://github.com/alanhyue/RL-2048-with-n-tuple-network) for sanity checks.
 - [On Reinforcement Learning for the Game of 2048](https://arxiv.org/pdf/2212.11087) for an overview of RL techniques used to play 2048. 
 - [Reinforcement Learning: An Introduction](http://incompleteideas.net/book/the-book.html) by Sutton and Barto, for a comprehensive introdution to the field. 
@@ -47,6 +43,11 @@ The various resources used for this project and how they were used are listed be
 
     This is neither the best way to implement a 2048 bot, nor the best use case for RL. I chose this project as an academic exersize and because I like the game. Implementation and performance details, as well as the source code, can be found on my GitHub.
 - Small YT vid
+
+## Structure of Repo
+- The `game` directory stores the `gameof2048.py` file that implements the game. 
+- The `agents` directory stores custom agent implementations, and are partially composed of classes from the `models` and `functions` directories.
+- The `experiments` directory stores experiments for different types of agents
 
 ## Notes
 - To achieve tile x, you need at minimum to have achieved x(log_2(x)-2) points, MUCH more likely to be around x(log_2(x)-1). This means only games of 20k+ points could have achieved 2048, etc 

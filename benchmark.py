@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from time import time
 from game.gameof2048 import Gameof2048
 from agents.dumbagent import DumbAgent
-from agents.tdagent import TDApproxAgent
+from agents.TDZeroApproxAgent.tdagent import TDApproxAgent
 from agents.greedy import GreedyAgent
 from math import log
 # import json
@@ -22,8 +22,7 @@ def benchmark(agent, num_games, report_every, dynamic_viz=False, save=False, wat
                 best_gameplay = game.gameplay
             best_tile_array[int(log(game.board.highest_tile, 2))] += (1/num_games)
         except KeyboardInterrupt:
-            if save: agent.save(loc=f'models/{agent.name}-model.json')
-            return -1
+            return scores
 
         scores.append(final_score)
         # running_avg = sum(scores)/len(scores)
@@ -42,6 +41,8 @@ def benchmark(agent, num_games, report_every, dynamic_viz=False, save=False, wat
                 print(f'Trial {trial_num} achieved {final_score}')
                 # print(f'Running avg after {trial_num} games = {running_avg:.1f}')
     if dynamic_viz: plt.show()
+    with open(f'agents/{agent}/gameplay-1.json', 'w') as fout:
+            json.dump(best_gameplay, fout)
     print(f'Benchmarked on {num_games} in {((time()-start)/3600):.2}hrs')
     print(f'Average Performance = {sum(scores)/len(scores)}')
     print(f'Best score achieved: {best_score}')
@@ -50,27 +51,27 @@ def benchmark(agent, num_games, report_every, dynamic_viz=False, save=False, wat
 
 if __name__ == '__main__':
     agent_repeats = 1
-    num_games = 5000
+    num_games = 1000
     avg_scores = [0 for _ in range(num_games)]
     for _ in range(agent_repeats):
-        for lr in [0.05]:
-                agent = TDApproxAgent(
-                    lmbda=1, 
-                    n_step=1, 
-                    discounting_param=1, 
-                    reward_scale=1, 
-                    learning_rate=lr,
-                    load_loc=f'models/TDZeroApproxAgent-model.json' # TODO check this
-                )
-                scores = benchmark(
-                    agent=agent,
-                    num_games=num_games, 
-                    report_every=25,
-                    dynamic_viz=False,
-                    watch=False
-                )
-                for index, val in enumerate(scores):
-                    avg_scores[index] += val/agent_repeats
+        for lr in [0.01]:
+            agent = TDApproxAgent(
+                lmbda=1, 
+                n_step=1, 
+                discounting_param=1, 
+                reward_scale=1, 
+                learning_rate=lr,
+                load_loc=f'agents/TDZeroApproxAgent/TDZeroApproxAgent.json' # TODO check this
+            )
+            scores = benchmark(
+                agent=agent,
+                num_games=num_games, 
+                report_every=25,
+                dynamic_viz=False,
+                watch=False
+            )
+            for index, val in enumerate(scores):
+                avg_scores[index] += val/agent_repeats
 
     # plt.scatter([i+1 for i in range(num_games)], avg_scores, color='green')
     # plt.show()

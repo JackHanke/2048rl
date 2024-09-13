@@ -21,13 +21,13 @@ class TDApproxAgent:
         self.learning_rate = learning_rate
         self.staterepfunc = identity_rep
         self.load_loc = load_loc
-        self.state_value_function_approx = nTupleNetwork(tuple_map_class=TupleMap1(), load_loc=self.load_loc)
+        self.state_value_function_approx = nTupleNetwork(tuple_map_class=TupleMap0(), load_loc=self.load_loc)
         self.temp_val = 0 # stores r + V(s') to avoid extra eval
         self.delta_history = []
         self.reward_history = []
 
     def save(self, loc):
-        # TODO add movel versioning
+        # TODO add movel versioning, use path package
         
         # model versioning
         # model_ver = 0

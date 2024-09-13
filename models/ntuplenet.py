@@ -5,7 +5,11 @@ import json
 def tuple_codify(tup):
     return_str = ''
     for val in tup:
-        return_str += str(int(log_modified(val)))
+        exponent_str = str(int(log_modified(val)))
+        if len(exponent_str) == 1:
+            return_str += '0' + exponent_str
+        elif len(exponent_str) == 2:
+            return_str += exponent_str
     return return_str
 
 class nTupleNetwork:
@@ -21,17 +25,15 @@ class nTupleNetwork:
     def forward(self, activation):
         tuple_activations = self.tuple_map(activation) # TODO make sure we have exponents and not one hot
         afterstate_val = 0
-        count = 0
         for tup_index, tup_collection in enumerate(tuple_activations):
             for tup_rep in tup_collection:
-                tup_code = tuple_codify(tup_collection)
+                tup_code = tuple_codify(tup_rep)
                 try:
                     weight = self.lookup_array[tup_index][tup_code]
                 except KeyError:
                     weight = 0
                     self.lookup_array[tup_index][tup_code] = weight  
                 afterstate_val += weight
-                count += 1
         return afterstate_val
 
     def backward(self, activation, label, learning_rate):
@@ -39,7 +41,7 @@ class nTupleNetwork:
         tuple_activations = self.tuple_map(activation) # tupleify the afterstate
         for tup_index, tup_collection in enumerate(tuple_activations):
             for tup_rep in tup_collection:
-                tup_code = tuple_codify(tup_collection)
+                tup_code = tuple_codify(tup_rep)
                 self.lookup_array[tup_index][tup_code] += delta_term
 
     def get_num_params(self):
