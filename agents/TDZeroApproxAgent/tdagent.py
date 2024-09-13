@@ -1,13 +1,12 @@
-from models.ann import ArtificialNeuralNetwork
+import numpy as np
+import json
+import random
 from models.ntuplenet import nTupleNetwork
+from models.ann import ArtificialNeuralNetwork
 from functions.activations import *
 from models.linear import Linear
 from functions.repfuncs import identity_rep, simple_exponent_state_rep
 from functions.rlfuncs import epsilon_greedy, better_argmax_dict
-from statistics import mean, variance
-import numpy as np
-import json
-import random
 from functions.tuplefuncs import *
 
 class TDApproxAgent:
@@ -21,7 +20,7 @@ class TDApproxAgent:
         self.learning_rate = learning_rate
         self.staterepfunc = identity_rep
         self.load_loc = load_loc
-        self.state_value_function_approx = nTupleNetwork(tuple_map_class=TupleMap0(), load_loc=self.load_loc)
+        self.state_value_function_approx = nTupleNetwork(tuple_map_class=TupleMap3(), load_loc=self.load_loc)
         self.temp_val = 0 # stores r + V(s') to avoid extra eval
         self.delta_history = []
         self.reward_history = []
