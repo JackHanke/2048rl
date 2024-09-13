@@ -54,24 +54,19 @@ if __name__ == '__main__':
     num_games = 1000
     avg_scores = [0 for _ in range(num_games)]
     for _ in range(agent_repeats):
-        for lr in [0.01]:
-            agent = TDApproxAgent(
-                lmbda=1, 
-                n_step=1, 
-                discounting_param=1, 
-                reward_scale=1, 
-                learning_rate=lr,
-                load_loc=f'agents/TDZeroApproxAgent/TDZeroApproxAgent.json' # TODO check this
-            )
-            scores = benchmark(
-                agent=agent,
-                num_games=num_games, 
-                report_every=25,
-                dynamic_viz=False,
-                watch=False
-            )
-            for index, val in enumerate(scores):
-                avg_scores[index] += val/agent_repeats
+        agent = TDApproxAgent(
+            load_loc=f'agents/TDZeroApproxAgent/TDZeroApproxAgent-2.json',
+            params_loc=f'agents/TDZeroApproxAgent/TDZeroApproxAgent-2-params.json'
+        )
+        scores = benchmark(
+            agent=agent,
+            num_games=num_games, 
+            report_every=25,
+            dynamic_viz=False,
+            watch=False
+        )
+        for index, val in enumerate(scores):
+            avg_scores[index] += val/agent_repeats
 
     # plt.scatter([i+1 for i in range(num_games)], avg_scores, color='green')
     # plt.show()

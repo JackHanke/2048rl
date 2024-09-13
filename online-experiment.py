@@ -4,6 +4,8 @@ from game.gameof2048 import Gameof2048
 from agents.dumbagent import DumbAgent
 from agents.greedy import GreedyAgent
 from agents.TDZeroApproxAgent.tdagent import TDApproxAgent
+from models.ntuplenet import nTupleNetwork
+from functions.tuplefuncs import *
 
 def online_experiment(agent, num_trials, report_every, dynamic_viz=False, save=False, watch=False):
     print(f'Running experiment with {agent.name}...')
@@ -16,7 +18,7 @@ def online_experiment(agent, num_trials, report_every, dynamic_viz=False, save=F
             final_score = game.play()
         # except KeyboardInterrupt:
         except KeyboardInterrupt:
-            if save: agent.save(loc=f'agents/{agent.name}/{agent.name}-model-1')
+            if save: agent.save()
             return scores, running_avg_list
 
         scores.append(final_score)
@@ -38,7 +40,7 @@ def online_experiment(agent, num_trials, report_every, dynamic_viz=False, save=F
     if dynamic_viz: plt.show()
     print(f'Trained on {num_trials} in {((time()-start)/3600):.2}hrs')
     if save:
-        agent.save(loc=f'agents/{agent.name}/{agent.name}-model-1')
+        agent.save()
     return scores, running_avg_list
 
 if __name__ == '__main__':
@@ -46,20 +48,22 @@ if __name__ == '__main__':
     num_trials = 100000
     avg_scores = [0 for _ in range(num_trials)]
     for _ in range(agent_repeats):
-        for lr in [0.005]:
+        for lr in [0.01]:
             for agent in [
                 TDApproxAgent(
+                    version_num='2'
                     lmbda=1, 
                     n_step=1, 
                     discounting_param=1, 
                     reward_scale=1, 
-                    learning_rate=lr
+                    learning_rate=lr,
+                    state_val_approx=nTupleNetwork(tuple_map_class=TupleMap0())
                 )
                 ]:
                 scores, running_avg_list = online_experiment(
                     agent=agent,
                     num_trials=num_trials, 
-                    report_every=250,
+                    report_every=100,
                     dynamic_viz=False,
                     save=True,
                     watch=False

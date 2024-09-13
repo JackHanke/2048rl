@@ -32,6 +32,7 @@ The various resources used for this project and how they were used are listed be
 ## Project TODOs
 - Implement "watch agent play" feature
 - Implement grid search for various params
+- Figure how to get longer training runs working on my machine
 - Saved models directory with version number and hyperparams recording, add this to gitignore
 - Num parameters feature in ntuplenet
 - Make stats section of README a table
