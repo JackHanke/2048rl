@@ -1,6 +1,8 @@
 # Reinforcement Learning for 2048
 A custom python clone of 2048, along with various custom reinforcement learning agents to play the game.
 
+![](./viz.gif)
+
 In reinforcement learning terms, 2048 is an episodic game with dense rewards, in which the actions are swiping up, down, left, and right, the states are the boards right after the swipe, and the afterstates are the board after a new tile spawns in.
 
 The statistics tracked for a specific agents are listed below. Each statistic is an average over x games
@@ -30,20 +32,16 @@ The various resources used for this project and how they were used are listed be
 - [The macht repository](https://github.com/rolfmorel/macht) for testing agents before I implemented a custom game.
 
 ## Project TODOs
-- Implement "watch agent play" feature
 - Implement grid search for various params
 - Figure how to get longer training runs working on my machine
 - Saved models directory with version number and hyperparams recording, add this to gitignore
-- Num parameters feature in ntuplenet
 - Make stats section of README a table
-- Make visual for 2 or 3 games side by side with caption, hook up finished agent to [original repo](https://github.com/gabrielecirulli/2048)
 - Linkedin Post with explan
-    I wrote a reinforcement learning agent from scratch to play 2048. Instead of telling an algorithm how to win the game, an RL agent is just told to get a high score. It learns to achive a high score through playing many games. 
+    I wrote a reinforcement learning agent from scratch to play 2048. Instead of telling an algorithm how to win the game, an RL agent is just told to get a high score. It learns to achieve a high score by adjusting what it believes is a good board position over the course of many games . 
 
-    While playing, the agent achieves the 2048 tile for the first time during its x-th game. After playing y games, the highest tile is achieves is z, and achives this in about z% of games. 
+    After playing over 10,000 games, the agent achieves 2048 49.1% of the time, and achieves 4196 1.5% of the time. Its highest score was 68,840 points. Does your score beat my program?
 
-    This is neither the best way to implement a 2048 bot, nor the best use case for RL. I chose this project as an academic exersize and because I like the game. Implementation and performance details, as well as the source code, can be found on my GitHub.
-- Small YT vid
+    Implementation and performance details, as well as the source code, can be found on my GitHub.
 
 ## Structure of Repo
 - The `game` directory stores the `gameof2048.py` file that implements the game. 
