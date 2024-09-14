@@ -12,7 +12,7 @@ def shiftLeft(board):
             if board[i][j] != 0:
                 nums.append(board[i][j])
                 count += 1
-        board[i] = nums + [np.int32(0) for _ in range(4-count)]
+        board[i] = nums + [np.uint32(0) for _ in range(4-count)]
 
 def shiftRight(board):
     # remove 0's in between numbers
@@ -22,12 +22,12 @@ def shiftRight(board):
             if board[i][j] != 0:
                 nums.append(board[i][j])
                 count += 1
-        board[i] = [np.int32(0) for _ in range(4-count)] + nums
+        board[i] = [np.uint32(0) for _ in range(4-count)] + nums
 
 class Board:
     def __init__(self, given_board=None):
         if given_board is not None: self.board = given_board
-        else: self.board = np.zeros((4,4), dtype=np.int32)
+        else: self.board = np.zeros((4,4), dtype=np.uint32)
         self.score = 0
         self.legal_moves = [i for i in range(4)]
         self.highest_tile = 0
@@ -59,9 +59,9 @@ class Board:
         if len(empty_cells) > 0:
             cell_row, cell_col = empty_cells[np.random.randint(0,len(empty_cells))]
             if random.random() < 0.9:
-                self.board[cell_row][cell_col] = np.int32(2)
+                self.board[cell_row][cell_col] = np.uint32(2)
             else:
-                self.board[cell_row][cell_col] = np.int32(4)
+                self.board[cell_row][cell_col] = np.uint32(4)
         else:
             pass
         # generate legal moves, check for game over
@@ -86,7 +86,7 @@ class Board:
                 if board[i][j] == board[i][j + 1] and board[i][j] != 0:
                     score += board[i][j]*2
                     board[i][j] *= 2
-                    board[i][j + 1] = np.int32(0)
+                    board[i][j + 1] = np.uint32(0)
                     j = 0
                     if board[i][j] > self.highest_tile and apply: self.highest_tile = board[i][j]
         # final shift
@@ -103,7 +103,7 @@ class Board:
                 if board[i][j] == board[i][j - 1] and board[i][j] != 0:
                     score += board[i][j]*2
                     board[i][j] *= 2
-                    board[i][j - 1] = np.int32(0)
+                    board[i][j - 1] = np.uint32(0)
                     j = 0
                     if board[i][j] > self.highest_tile and apply: self.highest_tile = board[i][j]
         # final shift

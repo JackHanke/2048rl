@@ -1,11 +1,13 @@
 import matplotlib.pyplot as plt
 from time import time
 from game.gameof2048 import Gameof2048
-from agents.dumbagent import DumbAgent
+from agents.RandomAgent.randomagent import RandomAgent
 from agents.TDZeroApproxAgent.tdagent import TDApproxAgent
 from agents.greedy import GreedyAgent
 from math import log
-# import json
+from models.ntuplenet import nTupleNetwork
+from functions.tuplefuncs import *
+import json
 
 def benchmark(agent, num_games, report_every, dynamic_viz=False, save=False, watch=False):
     print(f'Benchmarking {agent.name}...')
@@ -41,7 +43,7 @@ def benchmark(agent, num_games, report_every, dynamic_viz=False, save=False, wat
                 print(f'Trial {trial_num} achieved {final_score}')
                 # print(f'Running avg after {trial_num} games = {running_avg:.1f}')
     if dynamic_viz: plt.show()
-    with open(f'agents/{agent}/gameplay-1.json', 'w') as fout:
+    with open(f'agents/{agent.name}/gameplay-{agent.version_num}-1.json', 'w') as fout:
             json.dump(best_gameplay, fout)
     print(f'Benchmarked on {num_games} in {((time()-start)/3600):.2}hrs')
     print(f'Average Performance = {sum(scores)/len(scores)}')
@@ -51,13 +53,20 @@ def benchmark(agent, num_games, report_every, dynamic_viz=False, save=False, wat
 
 if __name__ == '__main__':
     agent_repeats = 1
-    num_games = 1000
+    num_games = 1
     avg_scores = [0 for _ in range(num_games)]
     for _ in range(agent_repeats):
-        agent = TDApproxAgent(
-            load_loc=f'agents/TDZeroApproxAgent/TDZeroApproxAgent-2.json',
-            params_loc=f'agents/TDZeroApproxAgent/TDZeroApproxAgent-2-params.json'
-        )
+        # load_loc=f'agents/TDZeroApproxAgent/TDZeroApproxAgent-model-2.json'
+        # agent = TDApproxAgent(
+        #     version_num='2',
+        #     lmbda=0, 
+        #     n_step=1, 
+        #     discounting_param=1, 
+        #     reward_scale=1, 
+        #     learning_rate=0.01,
+        #     state_val_approx=nTupleNetwork(tuple_map_class=TupleMap0(), load_loc=load_loc),
+        # )
+        agent = RandomAgent()
         scores = benchmark(
             agent=agent,
             num_games=num_games, 

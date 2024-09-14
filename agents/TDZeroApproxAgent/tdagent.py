@@ -56,7 +56,7 @@ class TDApproxAgent:
                 "discounting_param": self.discounting_param,
                 "reward_scale": self.reward_scale,
                 "learning_rate": self.learning_rate,
-                "state_value_function_approx": self.state_val_approx.name
+                "state_value_function_approx": self.state_value_function_approx.name
             }
             json.dump(params_dict, fout)
         

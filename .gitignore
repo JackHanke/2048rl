@@ -4,3 +4,7 @@
 
 # hide 
 agents/TDZeroApproxAgent/*.json
+
+# ignore everything in original 2048 repo except javascript changes
+2048/*
+!2048/js/

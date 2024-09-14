@@ -51,8 +51,8 @@ if __name__ == '__main__':
         for lr in [0.01]:
             for agent in [
                 TDApproxAgent(
-                    version_num='2'
-                    lmbda=1, 
+                    version_num='2',
+                    lmbda=0, 
                     n_step=1, 
                     discounting_param=1, 
                     reward_scale=1, 
