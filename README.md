@@ -24,9 +24,12 @@ The various resources used for this project and how they were used are listed be
 
 ## Project TODOs
 - Figure how to get longer training runs working on my machine, [this](https://medium.com/thefloatingpoint/running-really-long-scripts-ea929b943dd8) will likely help
+- Implement and test expectimax n-ply search, currently doing just greedy/1-ply 
 - Saved models directory with version number and hyperparams recording, add this to gitignore, this requires more though and organization
 - ANN/CNN implementation to try out DeepRL, [this](https://www.jstage.jst.go.jp/article/ipsjjip/29/0/29_336/_pdf/-char/en) paper will help
 - What exactly is the difference between model-free and model-based??
+- RL Scaling laws??
+- Compare to [best human players](https://2048masters.com/accreditations/), Stefan Popescu (on YT) seems to be the best confirmed human, multiple 800k games. Actually looks like [this](https://2048verse.com/) is site for best players, 1M+ games.
 
 ## Structure of Repo
 - The `game` directory stores the `gameof2048.py` file that implements the python clone of the game. To play the game, simply run `python3 play.py`
