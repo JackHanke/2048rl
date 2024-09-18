@@ -1,26 +1,17 @@
 # Reinforcement Learning for 2048
-A custom python clone of 2048, along with various custom reinforcement learning agents to play the game.
+A python clone of 2048, along with various custom reinforcement learning agents to play the game.
 
 ![](./viz.gif)
 
 In reinforcement learning terms, 2048 is an episodic game with dense rewards, in which the actions are swiping up, down, left, and right, the states are the boards right after the swipe, and the afterstates are the board after a new tile spawns in.
 
-The statistics tracked for a specific agents are listed below. Each statistic is an average over x games
-- Performance Stats:
-    - Average score achieved
-    - Highest score achieved
-    - Average highest tile
-    - Highest tile achieved
-    - Percentage of games that reach 2048 tile
-- Training Stats:
-    - Average number of games to first 2048 tile (in training!)
+## Best Results Achieved
 
-The agents that resulted in significant performance are listed below.
-- A TD(0) Agent using an n-tuple network to evaluate aterstates
-    - Tuple design= TupleMap1 in `functions/tuplefuncs.py`, Learning rate=, achieves:
+*All 2048 results have non-regularized and non-discounted rewards. 
 
-20.2% of games reached 2048, 1.5% reached 4196. The highest score was 68840. 100,000 games in 6.1 hrs
-49.1% of gamer reach 2048, 1.5% reached 4196. The highest score war 56208. 103,00 games in 11 hours. 92 MB of params
+| Agent Type | Function Approx | Lr | Trained Games| Avg Score (1000 games) | Best Score (1000) games | Win% |
+|-|-|-|-|-|-|-|
+| TD(0) Afterstate | N-Tuple (TupleMap0) | 0.01 | 0 | 0 | 0 | 0 |
 
 ## Resources:
 The various resources used for this project and how they were used are listed below. 
@@ -29,24 +20,17 @@ The various resources used for this project and how they were used are listed be
 - [On Reinforcement Learning for the Game of 2048](https://arxiv.org/pdf/2212.11087) for an overview of RL techniques used to play 2048. 
 - [Reinforcement Learning: An Introduction](http://incompleteideas.net/book/the-book.html) by Sutton and Barto, for a comprehensive introdution to the field. 
 - [The original 2048 repository](https://github.com/gabrielecirulli/2048) for the visualization and the original popularization of the game. 
-- [The macht repository](https://github.com/rolfmorel/macht) for testing agents before I implemented a custom game.
+- [The macht repository](https://github.com/rolfmorel/macht) for testing agents before I implemented the clone.
 
 ## Project TODOs
-- Implement grid search for various params
-- Figure how to get longer training runs working on my machine
-- Saved models directory with version number and hyperparams recording, add this to gitignore
-- Make stats section of README a table
-- Linkedin Post with explan
-    I wrote a reinforcement learning agent from scratch to play 2048. Instead of telling an algorithm how to win the game, an RL agent is just told to get a high score. It learns to achieve a high score by adjusting what it believes is a good board position over the course of many games . 
-
-    After playing over 10,000 games, the agent achieves 2048 49.1% of the time, and achieves 4196 1.5% of the time. Its highest score was 68,840 points. Does your score beat my program?
-
-    Implementation and performance details, as well as the source code, can be found on my GitHub.
+- Figure how to get longer training runs working on my machine, [this](https://medium.com/thefloatingpoint/running-really-long-scripts-ea929b943dd8) will likely help
+- Saved models directory with version number and hyperparams recording, add this to gitignore, this requires more though and organization
+- ANN/CNN implementation to try out DeepRL, [this](https://www.jstage.jst.go.jp/article/ipsjjip/29/0/29_336/_pdf/-char/en) paper will help
+- What exactly is the difference between model-free and model-based??
 
 ## Structure of Repo
-- The `game` directory stores the `gameof2048.py` file that implements the game. 
-- The `agents` directory stores custom agent implementations, and are partially composed of classes from the `models` and `functions` directories.
-- The `experiments` directory stores experiments for different types of agents
-
-## Notes
-- To achieve tile x, you need at minimum to have achieved x(log_2(x)-2) points, MUCH more likely to be around x(log_2(x)-1). This means only games of 20k+ points could have achieved 2048, etc 
+- The `game` directory stores the `gameof2048.py` file that implements the python clone of the game. To play the game, simply run `python3 play.py`
+- The `agents` directory stores custom agent implementations in their own directories, and are partially composed of classes from the `models` and `functions` directories.
+- The `2048` directory hosts modifications to the original 2048 repo to create the data viz at the top of this README. 
+- `*-experiemnts.py` creates, trains, and saves a given agent
+- `benchmark.py` benchmarks a given agent on a given number of games
