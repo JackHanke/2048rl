@@ -37,3 +37,7 @@ The various resources used for this project and how they were used are listed be
 - The `2048` directory hosts modifications to the original 2048 repo to create the data viz at the top of this README. 
 - `*-experiemnts.py` creates, trains, and saves a given agent
 - `benchmark.py` benchmarks a given agent on a given number of games
+
+## TODO Evolutionary Computation
+
+Use [PyTorch NEAT](https://github.com/ddehueck/pytorch-neat) to run new experiments
