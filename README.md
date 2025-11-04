@@ -40,4 +40,4 @@ The various resources used for this project and how they were used are listed be
 
 ## TODO Evolutionary Computation
 
-Use [PyTorch NEAT](https://github.com/ddehueck/pytorch-neat) to run new experiments
+- Use [PyTorch NEAT](https://github.com/ddehueck/pytorch-neat) to run new experiments
