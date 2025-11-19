@@ -1,6 +1,7 @@
 from time import sleep
-from game.board import Board
 from copy import deepcopy
+
+from neat.experiments.gameof2048.board import Board
 
 class Gameof2048:
     def __init__(self, agent, watch=False):
