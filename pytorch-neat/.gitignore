@@ -104,3 +104,5 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+neat/experiments/gameof2048/chekcpoints

@@ -1,7 +1,7 @@
 # Reinforcement Learning for 2048
 A python clone of 2048, along with various custom **Numpy-only** reinforcement learning agents to play the game.
 
-![](./viz.gif)
+![](.assets/viz.gif)
 
 In reinforcement learning terms, 2048 is an episodic game with dense rewards, in which the actions are swiping up, down, left, and right, the states are the boards right after the swipe, and the afterstates are the board after a new tile spawns in.
 

@@ -1,6 +1,8 @@
 import logging
 import random
-
+import pickle
+import datetime
+from time import time
 import numpy as np
 
 import neat.utils as utils
@@ -21,12 +23,14 @@ class Population:
         self.Config = config()
         self.population = self.set_initial_population()
         self.species = []
+        self.experiment_start_time = datetime.datetime.now()
 
         for genome in self.population:
             self.speciate(genome, 0)
 
     def run(self):
         for generation in range(1, self.Config.NUMBER_OF_GENERATIONS):
+            start_generation_time = time()
             # Get Fitness of Every Genome
             for genome in self.population:
                 genome.fitness = max(0, self.Config.fitness_fn(genome))
@@ -94,13 +98,22 @@ class Population:
             for genome in self.population:
                 self.speciate(genome, generation)
 
+            # checkpoint
+            if best_genome.fitness >= self.Config.FITNESS_SAVE_THRESHOLD:
+                with open(f'./neat/experiments/{self.Config.EXPERIMENT_NAME}/checkpoints/exp_{self.experiment_start_time}_gen_{generation}.pickle', 'wb') as f:
+                    pickle.dump(best_genome, f)
+                if self.Config.VERBOSE:
+                    logger.info(f'Checkpointed Best Genome of Generation {generation}.')
+            
+            # completion criterion
             if best_genome.fitness >= self.Config.FITNESS_THRESHOLD:
                 return best_genome, generation
 
             # Generation Stats
             if self.Config.VERBOSE:
-                logger.info(f'Finished Generation {generation}')
+                logger.info(f'Finished Generation {generation} in {time()-start_generation_time:.3f}s')
                 logger.info(f'Best Genome Fitness: {best_genome.fitness}')
+                logger.info(f'Average Fitness within generation: {sum(all_fitnesses)/len(all_fitnesses)}')
                 logger.info(f'Best Genome Length {len(best_genome.connection_genes)}\n')
 
         return None, None

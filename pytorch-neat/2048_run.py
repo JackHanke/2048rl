@@ -1,5 +1,4 @@
 import logging
-
 import torch
 
 import neat.population as pop
@@ -7,17 +6,16 @@ import neat.experiments.gameof2048.config as c
 from neat.phenotype.feed_forward import FeedForwardNet
 from neat.experiments.gameof2048.gameof2048 import Gameof2048
 
-# from neat.visualize import draw_net
-
+from neat.visualize import draw_net
 
 logger = logging.getLogger(__name__)
 
-logger.info(c.Gameof2048Config.DEVICE)
+logger.info(f'Beginning Experiment on device: {c.Gameof2048Config.DEVICE}')
 neat = pop.Population(c.Gameof2048Config)
 solution, generation = neat.run()
 
 if solution is not None:
-    logger.info('Testing solution...')
+    logger.info('Evaluating solution...')
 
     solution_phenotype = FeedForwardNet(solution, c.Gameof2048Config)
 
@@ -29,9 +27,7 @@ if solution is not None:
         final_score = game.play()
         score_history.append(final_score)
 
-    print(f'Mean score after {c.Gameof2048Config.NUMBER_OF_GENERATIONS} Generations: {sum(score_history)/len(score_history)}')
+    logger.info(f'After {c.Gameof2048Config.NUMBER_OF_GENERATIONS} Generations, Mean Score: {sum(score_history)/len(score_history)} Max Score: {max(score_history)}')
 
-    # TODO view solution playing!
-    
     # TODO view solution 
-    # draw_net(solution, view=True, filename='./images/2048-solution', show_disabled=True)
+    draw_net(solution, view=True, filename='./images/2048-solution', show_disabled=True)

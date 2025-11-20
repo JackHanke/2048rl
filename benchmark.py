@@ -49,11 +49,11 @@ def benchmark(agent, num_games, report_every, dynamic_viz=False, save=False, wat
     print(f'Average Performance = {sum(scores)/len(scores)}')
     print(f'Best score achieved: {best_score}')
     print(f'Best tiles prob = {best_tile_array}')
-    return scores
+    return scores, best_tile_array
 
 if __name__ == '__main__':
     agent_repeats = 1
-    num_games = 1
+    num_games = 1000
     avg_scores = [0 for _ in range(num_games)]
     for _ in range(agent_repeats):
         # load_loc=f'agents/TDZeroApproxAgent/TDZeroApproxAgent-model-2.json'
