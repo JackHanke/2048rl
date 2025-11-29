@@ -1,17 +1,18 @@
-# Reinforcement Learning for 2048
-A python clone of 2048, along with various custom **Numpy-only** reinforcement learning agents to play the game.
+# Playing 2048 with RL and EC
 
-![](.assets/viz.gif)
+This project includes a python clone of 2048, along with various custom **Numpy-only** reinforcement learning agents to play the game. It also includes a evolutionary computation approach using the [PyTorch NEAT](https://github.com/uber-research/PyTorch-NEAT) repository.
+
+<!-- ![](.assets/viz.gif) -->
 
 In reinforcement learning terms, 2048 is an episodic game with dense rewards, in which the actions are swiping up, down, left, and right, the states are the boards right after the swipe, and the afterstates are the board after a new tile spawns in.
 
-## Best Results Achieved
+<!-- ## Best Results Achieved -->
 
-*All 2048 results have non-regularized and non-discounted rewards. 
+<!-- *All 2048 results have non-regularized and non-discounted rewards.  -->
 
-| Agent Type | Function Approx | Lr | Trained Games| Avg Score (1000 games) | Best Score (1000) games | Win% |
-|-|-|-|-|-|-|-|
-| TD(0) Afterstate | N-Tuple (TupleMap0) | 0.01 | 0 | 0 | 0 | 0 |
+<!-- | Agent Type | Function Approx | Lr | Trained Games| Avg Score (1000 games) | Best Score (1000) games | Win% | -->
+<!-- |-|-|-|-|-|-|-| -->
+<!-- | TD(0) Afterstate | N-Tuple (TupleMap0) | 0.01 | 0 | 0 | 0 | 0 | -->
 
 ## Resources:
 The various resources used for this project and how they were used are listed below. 
@@ -37,7 +38,4 @@ The various resources used for this project and how they were used are listed be
 - The `2048` directory hosts modifications to the original 2048 repo to create the data viz at the top of this README. 
 - `*-experiemnts.py` creates, trains, and saves a given agent
 - `benchmark.py` benchmarks a given agent on a given number of games
-
-## TODO Evolutionary Computation
-
-- Use [PyTorch NEAT](https://github.com/ddehueck/pytorch-neat) to run new experiments
+- `pytorch-neat` includes the EC work
