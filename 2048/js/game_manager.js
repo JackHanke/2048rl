@@ -59,9 +59,7 @@ GameManager.prototype.setup = function () {
     // this.addStartTiles();
   }
 
-  console.log(this.gameplay);
-  // console.log(this.pos)
-
+  // initialize initial board
   for (var i = 0; i<4; i++){
     for (var j = 0; j<4; j++){
       var temp = this.gameplay.initialboard[j][i]; // 

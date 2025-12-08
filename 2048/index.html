@@ -17,8 +17,6 @@
   <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0, maximum-scale=1, user-scalable=no, minimal-ui">
 </head>
 <body>
-  <input type="file" id="json-input" accept=".json" />
-  <button id="process-button">Load file</button>
   <div class="container">
     <div class="heading">
       <h1 class="title">2048</h1>
@@ -29,8 +27,9 @@
     </div>
 
     <div class="above-game">
-      <p class="game-intro">Join the numbers and get to the <strong>2048 tile!</strong></p>
-      <a class="restart-button">New Game</a>
+      <p class="game-intro">Upload a game to watch play!</p>
+      <a class="upload-button" id="upload-button">Upload Game</a>
+      <input type="file" id="file-input" style="display: none;">
     </div>
 
     <div class="game-container">
@@ -74,8 +73,10 @@
       </div>
     </div>
 
-    <p class="game-explanation">
-      <strong class="important">How to play:</strong> Use your <strong>arrow keys</strong> to move the tiles. When two tiles with the same number touch, they <strong>merge into one!</strong>
+    <!-- <input type="file" id="json-input" accept=".json" /> -->
+    <!-- <button id="process-button">Load file</button> -->
+    <!-- <p class="game-explanation">
+    <strong class="important">How to play:</strong> Use your <strong>arrow keys</strong> to move the tiles. When two tiles with the same number touch, they <strong>merge into one!</strong>
     </p>
     <hr>
     <p>
@@ -84,7 +85,8 @@
     <hr>
     <p>
     Created by <a href="http://gabrielecirulli.com" target="_blank">Gabriele Cirulli.</a> Based on <a href="https://itunes.apple.com/us/app/1024!/id823499224" target="_blank">1024 by Veewo Studio</a> and conceptually similar to <a href="http://asherv.com/threes/" target="_blank">Threes by Asher Vollmer.</a>
-    </p>
+    </p> -->
+
   </div>
 
   <script src="js/bind_polyfill.js"></script>

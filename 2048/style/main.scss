@@ -468,6 +468,13 @@ hr {
   float: right;
 }
 
+.upload-button {
+  @include button;
+  display: block;
+  text-align: center;
+  float: right;
+}
+
 .game-explanation {
   margin-top: 50px;
 }
@@ -519,6 +526,14 @@ hr {
   }
 
   .restart-button {
+    width: 42%;
+    padding: 0;
+    display: block;
+    box-sizing: border-box;
+    margin-top: 2px;
+  }
+
+  .upload-button {
     width: 42%;
     padding: 0;
     display: block;

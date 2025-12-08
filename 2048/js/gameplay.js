@@ -1,30 +1,33 @@
-const fileInput = document.getElementById('json-input');
-const processButton = document.getElementById('process-button');
-const outputDisplay = document.getElementById('output-data');
+document.addEventListener('DOMContentLoaded', () => {
+    const uploadButton = document.getElementById('upload-button');
+    const fileInput = document.getElementById('file-input');
 
-async function loadJsonFile() {
-  return new Promise((resolve, reject) => {
-    const file = document.getElementById('json-input').files[0];
-    
-    if (!file) {
-      return reject(new Error("No file selected."));
-    }
-    
+    uploadButton.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0]; // Get the first file selected
+
+        if (file) {
+            processFile(file);
+        } else {
+            console.log('No file selected.');
+        }
+    });
+});
+
+function processFile(file) {
     const reader = new FileReader();
 
-    reader.onload = function(e) {
-      try {
+    reader.onload = (e) => {
         const data = JSON.parse(e.target.result);
-        resolve(data); // Resolve the promise with the parsed object
-      } catch (parseError) {
-        reject(new Error("Invalid JSON format.")); // Reject if parsing fails
-      }
+        initGame(data);
     };
-    
-    reader.onerror = function() {
-        reject(new Error("Error reading the file.")); // Reject if read fails
+
+    reader.onerror = (e) => {
+        console.error('Error reading file:', e);
     };
 
     reader.readAsText(file);
-  });
 }
