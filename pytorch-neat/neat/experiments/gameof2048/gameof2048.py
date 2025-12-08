@@ -9,14 +9,30 @@ class Gameof2048:
         self.board = Board()
         self.agent = agent
         self.watch = watch
-        self.gameplay = [deepcopy(self.board.board.tolist())]
+        self.moves = 0
+
+        """
+        intial_board: [board array] // initial condition for the board
+        gameplay: [
+            {
+                move_made: int 0 1 2 3 // move made 
+                new_tile_idx: tup(int 0 1 2 3, int 0 1 2 3) // place where the new tile spawned
+                new_tile_val: int 2 4 // value of new tile spawned
+                move_idx: int // index of move in game 
+                reward: int // score 
+            }
+        ]
+        """
+        self.board.start()
+        self.gameplay = {
+            'initialboard': deepcopy(self.board.board.tolist()),
+            'gameplay': []
+        }
 
     def play(self, verbose=False):
         afterstate = deepcopy(self.board.board)
-        self.board.start()
         if self.agent.type == 'human' or self.watch: print(self.board)
         while not self.game_over:
-            self.gameplay.append(deepcopy(self.board.board.tolist()))
             if self.agent.type == 'human':
                 direction = int(input()) # TODO type error handling
                 while (direction not in self.board.legal_moves) or (direction not in (0,1,2,3)):
@@ -39,8 +55,18 @@ class Gameof2048:
                     )
             afterstate, reward = self.board.move_tiles(direction, apply=True)
             
-            self.gameplay += [int(direction), int(reward), deepcopy(afterstate.tolist())]
-            self.game_over = self.board.spawn_tile()
+            self.game_over, new_tile_coords, new_tile_value = self.board.spawn_tile()
+            
+            self.moves += 1
+
+            self.gameplay['gameplay'].append({
+                'move_made': direction,
+                'new_tile_idx': new_tile_coords,
+                'new_tile_val': int(new_tile_value),
+                'move_idx': self.moves,
+                'reward': int(reward),
+            })
+
             self.board.score += reward
             if self.agent.type == 'human' or self.watch: print(self.board)
             if self.watch: 

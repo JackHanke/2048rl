@@ -3,6 +3,7 @@
 from time import time
 import torch 
 import numpy as np
+import json
 import pickle
 from math import log
 
@@ -24,6 +25,10 @@ def benchmark(agent, num_games, report_every, dynamic_viz=False, save=False, wat
             if final_score > best_score:
                 best_score = final_score
                 best_gameplay = game.gameplay
+                best_gameplay_dict = {'gameplay': best_gameplay}
+                with open("gameplay.json", "w") as f:
+                    json.dump(best_gameplay_dict, f)
+
             best_tile_array[int(log(game.board.highest_tile, 2))] += (1/num_games)
         except KeyboardInterrupt:
             return scores
@@ -34,17 +39,18 @@ def benchmark(agent, num_games, report_every, dynamic_viz=False, save=False, wat
         if dynamic_viz and trial_num % report_every == 0:
             # plt.subplot(2, 2, 1)
             # plt.subplot(2, 2, 2)
-            plt.scatter(trial_num, final_score, c='red')
-            plt.scatter(trial_num, running_avg, c='orange')
-            plt.title(f'2048 {agent.name} Score')
-            plt.xlabel(f'Trial #{trial_num} (Completed in {(time()-start):.2f}s)')
-            plt.ylabel(f'Final Score, Last {report_every} Running Average = {running_avg:.1f} Points')
-            plt.pause(0.00001)
+            # plt.scatter(trial_num, final_score, c='red')
+            # plt.scatter(trial_num, running_avg, c='orange')
+            # plt.title(f'2048 {agent.name} Score')
+            # plt.xlabel(f'Trial #{trial_num} (Completed in {(time()-start):.2f}s)')
+            # plt.ylabel(f'Final Score, Last {report_every} Running Average = {running_avg:.1f} Points')
+            # plt.pause(0.00001)
+            pass
         else:
             if trial_num % report_every == 0: 
-                print(f'Trial {trial_num} achieved {final_score}')
+                print(f'Best by Trial {trial_num}: {best_score}')
                 # print(f'Running avg after {trial_num} games = {running_avg:.1f}')
-    if dynamic_viz: plt.show()
+    # if dynamic_viz: plt.show()
     
     print(f'Benchmarked on {num_games} in {((time()-start)/3600):.2}hrs')
     print(f'Average Performance = {sum(scores)/len(scores)}')
@@ -79,7 +85,7 @@ class NEATAgent:
             if move not in [tup[0] for tup in afterstates]:
                 predictionTensor[0][move] = float('-inf')
         
-        chosen_action = torch.argmax(predictionTensor)
+        chosen_action = torch.argmax(predictionTensor).item()
 
         return chosen_action
 
@@ -97,22 +103,24 @@ best_phenotype = FeedForwardNet(best_genome, c.Gameof2048Config)
 
 agent = NEATAgent(phenotype=best_phenotype, device=DEVICE)
 
-# num_games = 2
+num_games = 300
 
-# scores, best_tile_array = benchmark(
-#     agent=agent,
-#     num_games=num_games, 
-#     report_every=25,
-#     dynamic_viz=False,
-#     watch=False
-# )
+print(f'Evaluating agent for {num_games} games at: {best_genome_path}')
+
+scores, best_tile_array = benchmark(
+    agent=agent,
+    num_games=num_games, 
+    report_every=25,
+    dynamic_viz=False,
+    watch=False
+)
 
 # print([int(score) for score in scores])
 # print('-'*50)
 # print(best_tile_array)
 
-print(best_genome)
-print('-'*50)
-print(best_phenotype)
+# print(best_genome)
+# print('-'*50)
+# print(best_phenotype)
 
 # draw_net(best_genome, view=True, filename='./images/2048-solution', show_disabled=True)

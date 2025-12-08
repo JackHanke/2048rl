@@ -1,4 +1,8 @@
-function loadJsonFile() {
+const fileInput = document.getElementById('json-input');
+const processButton = document.getElementById('process-button');
+const outputDisplay = document.getElementById('output-data');
+
+async function loadJsonFile() {
   return new Promise((resolve, reject) => {
     const file = document.getElementById('json-input').files[0];
     
@@ -18,21 +22,9 @@ function loadJsonFile() {
     };
     
     reader.onerror = function() {
-      reject(new Error("Error reading the file.")); // Reject if read fails
+        reject(new Error("Error reading the file.")); // Reject if read fails
     };
-    
-    // reader.readAsText(file);
-    data;
+
+    reader.readAsText(file);
   });
 }
-
-async function initGame(){
-  const gameplay = await loadJsonFile();
-  
-  // Wait till the browser is ready to render the game (avoids glitches)
-  window.requestAnimationFrame(function () {
-    new GameManager(4, KeyboardInputManager, HTMLActuator, LocalStorageManager, gameplay);
-  });
-}
-
-document.getElementById('process-button').addEventListener('click', initGame);

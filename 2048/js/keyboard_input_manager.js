@@ -12,11 +12,7 @@ function KeyboardInputManager() {
     this.eventTouchend      = "touchend";
   }
 
-  this.gameplay = goodgameplay
-  // this.gameplay = badgameplay
-  this.pos = 6
-
-  this.listen(this.pos, this.gameplay);
+  this.listen();
 }
 
 KeyboardInputManager.prototype.on = function (event, callback) {
@@ -35,7 +31,7 @@ KeyboardInputManager.prototype.emit = function (event, data) {
   }
 };
 
-KeyboardInputManager.prototype.listen = function (pos, gameplay_thing) {
+KeyboardInputManager.prototype.listen = function () {
   var self = this;
 
   var map = {
@@ -53,30 +49,12 @@ KeyboardInputManager.prototype.listen = function (pos, gameplay_thing) {
     65: 3  // A
   };
 
-  var rotate_map = {
-    0: 3,
-    1: 0,
-    2: 1,
-    3: 2
-  }
-
   // Respond to direction keys
   document.addEventListener("keydown", function (event) {
+    // human player
     var modifiers = event.altKey || event.ctrlKey || event.metaKey ||
                     event.shiftKey;
-
-    // human player
-    // var mapped    = map[event.which];
-
-    // gameplay history that works
-    var dir = gameplay_thing[pos];
-
-    // random moves
-    // var dir = Math.floor(Math.random() *  4);
-
-    var mapped = dir;
-    pos += 4
-    // console.log(pos,mapped)
+    var mapped    = map[event.which];
 
     if (!modifiers) {
       if (mapped !== undefined) {

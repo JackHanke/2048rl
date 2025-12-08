@@ -1,4 +1,4 @@
-function GameManager(size, InputManager, Actuator, StorageManager) {
+function GameManager(size, InputManager, Actuator, StorageManager, gameplay) {
   this.size           = size; // Size of the grid
   this.inputManager   = new InputManager;
   this.storageManager = new StorageManager;
@@ -9,10 +9,10 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.inputManager.on("move", this.move.bind(this));
   this.inputManager.on("restart", this.restart.bind(this));
   this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));
-
-  this.gameplay = goodgameplay
-  // this.gameplay = badgameplay
-  this.pos = 5
+  
+  this.gameplay = gameplay.gameplay;
+  
+  this.moves = 0;
 
   this.setup();
 }
@@ -37,7 +37,8 @@ GameManager.prototype.isGameTerminated = function () {
 
 // Set up the game
 GameManager.prototype.setup = function () {
-  var previousState = this.storageManager.getGameState();
+  // var previousState = this.storageManager.getGameState();
+  var previousState = false;
 
   // Reload the game from a previous game if present
   if (previousState) {
@@ -55,19 +56,19 @@ GameManager.prototype.setup = function () {
     this.keepPlaying = false;
 
     // Add the initial tiles
-    this.addStartTiles();
+    // this.addStartTiles();
   }
 
-  console.log(this.pos)
+  console.log(this.gameplay);
+  // console.log(this.pos)
+
   for (var i = 0; i<4; i++){
     for (var j = 0; j<4; j++){
-      var temp = this.gameplay[this.pos][j][i] // flipped!
+      var temp = this.gameplay.initialboard[j][i]; // 
       if (temp > 0) {
-        this.grid.cells[i][j] = new Tile(position={x:i,y:j}, value=temp)
+        var tile = new Tile(position={x:i, y:j}, value=temp);
+        this.grid.insertTile(tile);
       } 
-      else {
-        this.grid.cells[i][j] = null
-      }
     }  
   }
 
@@ -101,8 +102,7 @@ GameManager.prototype.addSpecificTile = function (cell_pos, val) {
       this.grid.insertTile(tile);
     }
   } catch (error) {
-    // console.log(error)
-    console.log(cell_pos, val, this.pos)
+    console.log(cell_pos, val)
     return false;
   }
 };
@@ -119,8 +119,6 @@ GameManager.prototype.actuate = function () {
   } else {
     this.storageManager.setGameState(this.serialize());
   }
-
-  
 
   this.actuator.actuate(this.grid, {
     score:      this.score,
@@ -167,6 +165,11 @@ GameManager.prototype.move = function (direction) {
 
   if (this.isGameTerminated()) return; // Don't do anything if the game's over
 
+  direction = this.gameplay['gameplay'][this.moves]['move_made']; // rewrite direction variable
+  var new_tile_x_coord = this.gameplay['gameplay'][this.moves]['new_tile_idx'][1];
+  var new_tile_y_coord = this.gameplay['gameplay'][this.moves]['new_tile_idx'][0];
+  var new_tile_value = this.gameplay['gameplay'][this.moves]['new_tile_val'];
+  
   var cell, tile;
 
   var vector     = this.getVector(direction);
@@ -212,32 +215,21 @@ GameManager.prototype.move = function (direction) {
       }
     });
   });
-
   
   if (moved) {
-    // if human or random player
     // this.addRandomTile();
-    
-    // derive specific pos and val from gameplay
-    this.pos += 4
-    var temp1 = this.gameplay[this.pos-1]
-    var temp2 = this.gameplay[this.pos]
-    for (var i = 0; i<4; i++){
-      for (var j = 0; j<4; j++){
-        if (temp1[i][j] != temp2[i][j]){
-          var cell_pos = {x:j, y:i};
-          var val = temp2[i][j];
-        }
-      }  
-    }
-    this.addSpecificTile(cell_pos, val);
 
+    this.addSpecificTile(position={x:new_tile_x_coord, y:new_tile_y_coord}, value=new_tile_value);
+    this.moves += 1;
 
     if (!this.movesAvailable()) {
       this.over = true; // Game over!
     }
 
     this.actuate();
+  }
+  else {
+    console.log(`something went wrong!`)
   }
 };
 
