@@ -2,7 +2,11 @@ import numpy as np
 import random
 from os import system
 from copy import deepcopy
-from functions.repfuncs import log_modified
+# from functions.repfuncs import log_modified
+
+def log_modified(x, b=2):
+    if x == 0: return 0
+    return log(x, b)
 
 def shiftLeft(board):
     # remove 0's in between numbers
@@ -59,9 +63,10 @@ class Board:
         if len(empty_cells) > 0:
             cell_row, cell_col = empty_cells[np.random.randint(0,len(empty_cells))]
             if random.random() < 0.9:
-                self.board[cell_row][cell_col] = np.uint32(2)
+                tile_value = np.uint32(2)
             else:
-                self.board[cell_row][cell_col] = np.uint32(4)
+                tile_value = np.uint32(4)
+            self.board[cell_row][cell_col] = tile_value
         else:
             pass
         # generate legal moves, check for game over
@@ -74,7 +79,7 @@ class Board:
             if not ((original_state == afterstate).all()):
                 self.legal_moves.append(direction)
         if len(self.legal_moves) == 0: game_over = True
-        return game_over
+        return game_over, (cell_row, cell_col), tile_value
         
     def _moveLeft(self, board, apply=False):
         score = 0
@@ -137,7 +142,6 @@ class Board:
         return deepcopy(afterstate), score
 
 if __name__ == '__main__':
-
 
     board = np.array(
         [

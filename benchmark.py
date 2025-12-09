@@ -1,13 +1,14 @@
 import matplotlib.pyplot as plt
 from time import time
+from math import log
+import json
+
 from game.gameof2048 import Gameof2048
 from agents.RandomAgent.randomagent import RandomAgent
 from agents.TDZeroApproxAgent.tdagent import TDApproxAgent
 from agents.greedy import GreedyAgent
-from math import log
 from models.ntuplenet import nTupleNetwork
 from functions.tuplefuncs import *
-import json
 
 def benchmark(agent, num_games, report_every, dynamic_viz=False, save=False, watch=False):
     print(f'Benchmarking {agent.name}...')
