@@ -1,17 +1,51 @@
-import matplotlib.pyplot as plt
+# benchmarking game and agent
+import json
 from time import time
 from math import log
-import json
+import matplotlib.pyplot as plt
 
 from game.gameof2048 import Gameof2048
-from agents.RandomAgent.randomagent import RandomAgent
-from agents.TDZeroApproxAgent.tdagent import TDApproxAgent
-from agents.greedy import GreedyAgent
-from models.ntuplenet import nTupleNetwork
-from functions.tuplefuncs import *
+from scratch.agents.RandomAgent.randomagent import RandomAgent
 
-def benchmark(agent, num_games, report_every, dynamic_viz=False, save=False, watch=False):
+# benchmark game implementation 
+def benchmark_game(
+        num_moves: int
+    ):
+
+    agent = RandomAgent()
+
+    start_time = time()
+    moves_played = 0
+    games_played = 0
+    while moves_played < num_moves:
+        game = Gameof2048(agent=agent, watch=False)
+
+        final_score = game.play()
+        games_played += 1
+
+        moves_played += game.moves
+
+    total_time = time() - start_time
+
+    moves_per_second = moves_played/total_time
+    # TODO variance calculation
+
+    print(f'Played {moves_played:,} moves over {games_played} games in {total_time:.2f} seconds.')
+    print(f'Moves/sec: {moves_per_second:.1f} Sec/Moves: {(1/moves_per_second):.6f}')
+        
+
+# benchmark agent for performance for num_games, reporting score every report_every
+def benchmark_agent(
+        agent,
+        num_games: int, 
+        report_every: int, 
+        dynamic_viz: bool = False, 
+        save: bool = False, 
+        watch: bool = False
+    ):
+
     print(f'Benchmarking {agent.name}...')
+
     start = time()
     scores = []
     best_tile_array = [0 for _ in range(18)]
@@ -53,30 +87,17 @@ def benchmark(agent, num_games, report_every, dynamic_viz=False, save=False, wat
     return scores, best_tile_array
 
 if __name__ == '__main__':
-    agent_repeats = 1
-    num_games = 1000
-    avg_scores = [0 for _ in range(num_games)]
-    for _ in range(agent_repeats):
-        # load_loc=f'agents/TDZeroApproxAgent/TDZeroApproxAgent-model-2.json'
-        # agent = TDApproxAgent(
-        #     version_num='2',
-        #     lmbda=0, 
-        #     n_step=1, 
-        #     discounting_param=1, 
-        #     reward_scale=1, 
-        #     learning_rate=0.01,
-        #     state_val_approx=nTupleNetwork(tuple_map_class=TupleMap0(), load_loc=load_loc),
-        # )
-        agent = RandomAgent()
-        scores = benchmark(
-            agent=agent,
-            num_games=num_games, 
-            report_every=25,
-            dynamic_viz=False,
-            watch=False
-        )
-        for index, val in enumerate(scores):
-            avg_scores[index] += val/agent_repeats
+    
+    # num_games = 1000
+    # avg_scores = [0 for _ in range(num_games)]
+    # agent = RandomAgent()
+    # scores = benchmark_agent(
+    #     agent=agent,
+    #     num_games=num_games, 
+    #     report_every=25,
+    #     dynamic_viz=False,
+    #     watch=False
+    # )
 
-    # plt.scatter([i+1 for i in range(num_games)], avg_scores, color='green')
-    # plt.show()
+    num_moves = 20_000
+    benchmark_game(num_moves=num_moves)

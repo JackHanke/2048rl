@@ -1,5 +1,5 @@
 import random
-from functions.repfuncs import simple_exponent_state_rep
+from scratch.functions.repfuncs import simple_exponent_state_rep
 
 # the agent that learns nothing an acts randomly
 class RandomAgent:

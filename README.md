@@ -1,6 +1,7 @@
 # Playing 2048 with RL and EC
 
 This project includes a python clone of 2048, along with various custom **Numpy-only** reinforcement learning agents to play the game. It also includes a evolutionary computation approach using the [PyTorch NEAT](https://github.com/uber-research/PyTorch-NEAT) repository.
+Finally, it includes a deep learining approach.
 
 <!-- ![](.assets/viz.gif) -->
 
@@ -13,7 +14,7 @@ In reinforcement learning terms, 2048 is an episodic game with dense rewards, in
 ├── 2048/           // modification of original source code to view game
 ├── assets/         // various visuals and movies created
 ├── game/           // custom implementation of game
-├── scratch/        // from scratch implementation of TD learning with N-tuple networks (AKA RAMNets)
+├── scratch/        // from scratch implementation of TD learning with N-tuple nets
 ├── benchmark.py    // 
 ├── evaluate.py     // evaluate agent
 ├── play.py         // play custom 2048 game via terminal
