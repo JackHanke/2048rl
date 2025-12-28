@@ -38,9 +38,22 @@ class Gameof2048:
         
         while not self.game_over:
             if self.agent.type == 'human':
-                direction = int(input()) # TODO type error handling
-                while (direction not in self.board.legal_moves) or (direction not in (0,1,2,3)):
-                    direction = int(input('Enter 0 (Up) 1 (Right) 2 (Down) 3 (Left)\n'))
+                while True:
+                    direction = input()
+                    error_msg = 'Please enter 0 (Up) 1 (Right) 2 (Down) 3 (Left)\n'
+                    try:
+                        direction = int(direction)
+                        if (direction not in self.board.legal_moves) or (direction not in (0,1,2,3)):
+                            print(error_msg)
+                            continue
+                        else:
+                            break
+                    except ValueError:
+                        if direction in ('q', 'Q', 'quit', 'Quit', 'QUIT'):
+                            self.game_over = True
+                            break
+                        else:
+                            print(error_msg)
             else:
                 if self.needs_afterstates:
                     afterstates = []
@@ -54,25 +67,27 @@ class Gameof2048:
                 else:
                     direction = self.agent.choose(board = self.board)
 
-            afterstate, reward = self.board.move_tiles(direction, apply=True)
-            
-            self.game_over, new_tile_coords, new_tile_value = self.board.spawn_tile()
-            
-            self.moves += 1
+            # if game not quit
+            if not self.game_over:
+                afterstate, reward = self.board.move_tiles(direction, apply=True)
+                
+                self.game_over, new_tile_coords, new_tile_value = self.board.spawn_tile()
+                
+                self.moves += 1
 
-            self.gameplay['gameplay'].append({
-                'move_made': direction,
-                'new_tile_idx': new_tile_coords,
-                'new_tile_val': int(new_tile_value),
-                'move_idx': self.moves,
-                'reward': int(reward),
-            })
+                self.gameplay['gameplay'].append({
+                    'move_made': direction,
+                    'new_tile_idx': new_tile_coords,
+                    'new_tile_val': int(new_tile_value),
+                    'move_idx': self.moves,
+                    'reward': int(reward),
+                })
 
-            self.board.score += reward
-            if self.do_display: print(self.board)
-            if self.watch: 
-                print(f'Agent chose: {direction}')
-                sleep(0.1)
+                self.board.score += reward
+                if self.do_display: print(self.board)
+                if self.watch: 
+                    print(f'Agent chose: {direction}')
+                    sleep(0.1)
         
         if verbose: print(f'Final Score = {self.board.score}')
         return self.board.score    

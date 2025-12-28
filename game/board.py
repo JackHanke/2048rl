@@ -4,10 +4,6 @@ import numpy as np
 from copy import deepcopy
 from math import log
 
-def log_modified(x, b: int = 2):
-    if x == 0: return 0
-    return log(x, b)
-
 def shiftLeft(board: np.array):
     # remove 0's in between numbers
     for i in range(4):
@@ -30,6 +26,7 @@ def shiftRight(board: np.array):
 
 class Board:
     def __init__(self, given_board=None):
+        # NOTE board uses log_2() of the tile value internally
         if given_board is not None: self.board = given_board
         else: self.board = np.zeros((4,4), dtype=np.uint32)
         self.score = 0
@@ -42,7 +39,7 @@ class Board:
         for i in range(4):
             row_str = '|'
             for j in range(4):
-                row_str += ' ' + str(int(log_modified(self.board[i][j]))) + ' '
+                row_str += ' ' + str(int(self.board[i][j])) + ' '
             return_str += row_str + '|\n'
         return_str += '|------------|\n' 
         return_str += f'     {self.score}  \n'
@@ -63,14 +60,14 @@ class Board:
         if len(empty_cells) > 0:
             cell_row, cell_col = empty_cells[np.random.randint(0,len(empty_cells))]
             if random.random() < 0.9:
-                tile_value = np.uint32(2)
+                tile_value = np.uint32(1)
             else:
-                tile_value = np.uint32(4)
+                tile_value = np.uint32(2)
             self.board[cell_row][cell_col] = tile_value
         else:
             # TODO does this matter?
             cell_row, cell_col = 0, 0
-            tile_value = np.uint32(2)
+            tile_value = np.uint32(1)
 
         # generate legal moves, check for game over
         self.legal_moves = self._get_legal_moves()
@@ -125,10 +122,12 @@ class Board:
         for i in range(4):
             for j in range(3):
                 if board[i][j] == board[i][j + 1] and board[i][j] != 0:
-                    score += board[i][j]*2
-                    board[i][j] *= 2
+                    # score += board[i][j]*2
+                    score += 2**(board[i][j]+1)
+                    # board[i][j] *= 2
+                    board[i][j] += 1
                     board[i][j + 1] = np.uint32(0)
-                    if board[i][j] > self.highest_tile and apply: self.highest_tile = board[i][j]
+                    if board[i][j] > self.highest_tile and apply: self.highest_tile = 2**(board[i][j])
         # final shift
         shiftLeft(board)
         return board, score
@@ -141,10 +140,12 @@ class Board:
         for i in range(4):
             for j in range(3, 0, -1):
                 if board[i][j] == board[i][j - 1] and board[i][j] != 0:
-                    score += board[i][j]*2
-                    board[i][j] *= 2
+                    # score += board[i][j]*2
+                    score += 2**(board[i][j]+1)
+                    # board[i][j] *= 2
+                    board[i][j] += 1
                     board[i][j - 1] = np.uint32(0)
-                    if board[i][j] > self.highest_tile and apply: self.highest_tile = board[i][j]
+                    if board[i][j] > self.highest_tile and apply: self.highest_tile = 2**(board[i][j])
         # final shift
         shiftRight(board)
         return board, score
@@ -178,18 +179,19 @@ class Board:
 
 if __name__ == '__main__':
 
-    board = np.array(
-        [
-            [  0,   2,   4,  16],
-            [  0,   4,   8, 512],
-            [  2,   8,  32, 256],
-            [  8,  32, 128,  32]
-        ]
-    )
-    board_obj = Board(board)
+    # board = np.array(
+    #     [
+    #         [  0,   2,   4,  16],
+    #         [  0,   4,   8, 512],
+    #         [  2,   8,  32, 256],
+    #         [  8,  32, 128,  32]
+    #     ]
+    # )
+    # board_obj = Board(board)
 
-    print(board_obj.board)
-    for action in range(4):
-        print(f'action = {action}')
-        print(board_obj.move_tiles(action))
-        print('')
+    # print(board_obj.board)
+    # for action in range(4):
+    #     print(f'action = {action}')
+    #     print(board_obj.move_tiles(action))
+    #     print('')
+    pass

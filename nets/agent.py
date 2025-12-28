@@ -2,15 +2,11 @@ from numpy import np
 import torch
 from math import log
 
-def log_modified(x, b: int = 2):
-    if x == 0: return 0
-    return int(log(x, b))
-
 def state_to_tensor(state_array: np.array) -> torch.tensor:
     return_tensor = torch.zeros((1, 16, 17))
     for i in range(4):
         for j in range(4):
-            return_tensor[0][(4*i)+j][log_modified(state_array[i][j])] = 1
+            return_tensor[0][(4*i)+j][state_array[i][j]] = 1
     return return_tensor
 
 class Agent:
