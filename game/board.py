@@ -4,7 +4,7 @@ import numpy as np
 from copy import deepcopy
 from math import log
 
-def log_modified(x, b: int =2):
+def log_modified(x, b: int = 2):
     if x == 0: return 0
     return log(x, b)
 
@@ -68,7 +68,7 @@ class Board:
                 tile_value = np.uint32(4)
             self.board[cell_row][cell_col] = tile_value
         else:
-            # TODO does this matter
+            # TODO does this matter?
             cell_row, cell_col = 0, 0
             tile_value = np.uint32(2)
 

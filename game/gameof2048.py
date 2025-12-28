@@ -52,9 +52,7 @@ class Gameof2048:
                         afterstates = afterstates
                     )
                 else:
-                    direction = self.agent.choose(
-                        state = self.board.board
-                    )
+                    direction = self.agent.choose(board = self.board)
 
             afterstate, reward = self.board.move_tiles(direction, apply=True)
             

@@ -9,3 +9,7 @@ agents/TDZeroApproxAgent/*.json
 !2048/js/
 
 pytorch-neat/neat/experiments/gameof2048/checkpoints/*
+
+# checkpoints for model
+nets/checkpoints/*
+!nets/checkpoints/.gitkeep
