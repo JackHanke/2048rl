@@ -1,5 +1,10 @@
 
-
+# experiment configs 
 epochs: 2
+
+# training configs
 batch_size: 32
 
+# model configs
+embedding_dim: 64
+num_layers: 3

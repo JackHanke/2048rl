@@ -3,10 +3,11 @@ import torch
 from math import log
 
 def state_to_tensor(state_array: np.array) -> torch.tensor:
-    return_tensor = torch.zeros((1, 16, 17))
+    return_tensor = torch.zeros((1, 17))
+    return_tensor[0][0] = 18 # class token first
     for i in range(4):
         for j in range(4):
-            return_tensor[0][(4*i)+j][state_array[i][j]] = 1
+            return_tensor[0][(4*i)+j+1] = state_array[i][j]
     return return_tensor
 
 class Agent:
@@ -29,7 +30,6 @@ class Agent:
             for i in range(4):
                 if i not in board.legal_moves:
                     logits[i] = -float('inf')
-
 
             if self.mode == 'inference':
                 # argmax

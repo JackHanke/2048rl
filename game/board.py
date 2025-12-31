@@ -46,36 +46,6 @@ class Board:
         return_str += '|------------|\n|      0     |\n|    3 . 1   |\n|      2     |\n|------------|'
         return return_str
         
-    def start(self):
-        self.spawn_tile()
-        self.spawn_tile()
-
-    def spawn_tile(self):
-        # spawns tile on self.board object
-        empty_cells = []
-        for i in range(4):
-            for j in range(4):
-                if self.board[i][j] == 0:
-                    empty_cells.append((i,j))
-        if len(empty_cells) > 0:
-            cell_row, cell_col = empty_cells[np.random.randint(0,len(empty_cells))]
-            if random.random() < 0.9:
-                tile_value = np.uint32(1)
-            else:
-                tile_value = np.uint32(2)
-            self.board[cell_row][cell_col] = tile_value
-        else:
-            # TODO does this matter?
-            cell_row, cell_col = 0, 0
-            tile_value = np.uint32(1)
-
-        # generate legal moves, check for game over
-        self.legal_moves = self._get_legal_moves()
-
-        game_over = False
-        if len(self.legal_moves) == 0: game_over = True
-        return game_over, (cell_row, cell_col), tile_value
-        
     def _get_legal_moves(self):
         legal_moves = []
         # check for up (and possibly down)
@@ -161,6 +131,36 @@ class Board:
         board, score = self._moveRight(board, apply=apply)
         board = board.transpose()
         return board, score
+    
+    def start(self):
+        self.spawn_tile()
+        self.spawn_tile()
+
+    def spawn_tile(self):
+        # spawns tile on self.board object
+        empty_cells = []
+        for i in range(4):
+            for j in range(4):
+                if self.board[i][j] == 0:
+                    empty_cells.append((i,j))
+        if len(empty_cells) > 0:
+            cell_row, cell_col = empty_cells[np.random.randint(0,len(empty_cells))]
+            if random.random() < 0.9:
+                tile_value = np.uint32(1)
+            else:
+                tile_value = np.uint32(2)
+            self.board[cell_row][cell_col] = tile_value
+        else:
+            # TODO does this matter?
+            cell_row, cell_col = 0, 0
+            tile_value = np.uint32(1)
+
+        # generate legal moves, check for game over
+        self.legal_moves = self._get_legal_moves()
+
+        game_over = False
+        if len(self.legal_moves) == 0: game_over = True
+        return game_over, (cell_row, cell_col), 2**tile_value
 
     def move_tiles(self, direction, apply:bool = False):
         if apply: board = self.board # copy the reference to the argument board

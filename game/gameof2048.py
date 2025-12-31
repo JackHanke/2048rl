@@ -18,11 +18,11 @@ class Gameof2048:
         intial_board: [board array] // initial condition for the board
         gameplay: [
             {
-                move_made: int 0 1 2 3 // move made 
+                move_made: int 0 1 2 3                      // move made 
                 new_tile_idx: tup(int 0 1 2 3, int 0 1 2 3) // place where the new tile spawned
-                new_tile_val: int 2 4 // value of new tile spawned
-                move_idx: int // index of move in game 
-                reward: int // score 
+                new_tile_val: int 2 4                       // value of new tile spawned
+                move_idx: int                               // index of move in game 
+                reward: int                                 // score 
             }
         ]
         """
@@ -32,28 +32,33 @@ class Gameof2048:
             'gameplay': []
         }
 
+    def _process_user_input(self):
+        direction = None
+        while True:
+            direction = input()
+            error_msg = 'Please enter 0 (Up) 1 (Right) 2 (Down) 3 (Left)\n'
+            try:
+                direction = int(direction)
+                if (direction not in self.board.legal_moves) or (direction not in (0,1,2,3)):
+                    print(error_msg)
+                    continue
+                else:
+                    break
+            except ValueError:
+                if direction in ('q', 'Q', 'quit', 'Quit', 'QUIT'):
+                    self.game_over = True
+                    break
+                else:
+                    print(error_msg)
+        return direction
+    
     def play(self, verbose:bool = False):
         afterstate = deepcopy(self.board.board)
         if self.do_display: print(self.board)
         
         while not self.game_over:
             if self.agent.type == 'human':
-                while True:
-                    direction = input()
-                    error_msg = 'Please enter 0 (Up) 1 (Right) 2 (Down) 3 (Left)\n'
-                    try:
-                        direction = int(direction)
-                        if (direction not in self.board.legal_moves) or (direction not in (0,1,2,3)):
-                            print(error_msg)
-                            continue
-                        else:
-                            break
-                    except ValueError:
-                        if direction in ('q', 'Q', 'quit', 'Quit', 'QUIT'):
-                            self.game_over = True
-                            break
-                        else:
-                            print(error_msg)
+                direction = self._process_user_input()
             else:
                 if self.needs_afterstates:
                     afterstates = []

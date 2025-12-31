@@ -7,14 +7,6 @@ from torchinfo import summary
 
 from nets.net import PolicyValueNet
 
-with open('config.yaml', 'r') as file: config = yaml.safe_load(file)
-
-num_epochs = config['num_epochs']
-
-for epoch in range(1, num_epochs+1):
-    pass
-
-
 def train():
     experiment_start_time = datetime.now()
 
@@ -22,6 +14,9 @@ def train():
     BATCH_SIZE = config['batch_size']
     EPOCHS = config['epochs']
     LEARNING_RATE = 1e-4
+
+    EMBEDDING_DIM = config['embedding_dim']
+    NUM_LAYERS = config['num_layers']
 
     logger = logging.getLogger(__name__)
     logging.basicConfig(
@@ -33,7 +28,10 @@ def train():
 
     DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-    model = PolicyValueNet().to(DEVICE)
+    model = PolicyValueNet(
+        embedding_dim=EMBEDDING_DIM,
+        num_layers=NUM_LAYERS,
+    ).to(DEVICE)
 
     summary_str = summary(model, input_size=(BATCH_SIZE, 4, 4, 17))
     model_summary_str = '\n'+str(summary_str)
@@ -45,6 +43,10 @@ def train():
     logger.info(f"Starting experiment on: {experiment_start_time}")
     for epoch in range(EPOCHS):
         optimizer.zero_grad()
+
+        # TODO everything
+
+        # TODO add game parallelism
 
 if __name__ == "__main__":
     train()
