@@ -52,11 +52,33 @@ class Gameof2048:
                     print(error_msg)
         return direction
     
+    def do_move(self, direction: int):
+        afterstate, reward = self.board.move_tiles(direction, apply=True)
+                
+        self.game_over, new_tile_coords, new_tile_value = self.board.spawn_tile()
+        
+        self.moves += 1
+
+        self.gameplay['gameplay'].append({
+            'move_made': direction,
+            'new_tile_idx': new_tile_coords,
+            'new_tile_val': int(new_tile_value),
+            'move_idx': self.moves,
+            'reward': int(reward),
+        })
+
+        self.board.score += reward
+        if self.do_display: print(self.board)
+        if self.watch: 
+            print(f'Agent chose: {direction}')
+            sleep(0.1)
+    
     def play(self, verbose:bool = False):
         afterstate = deepcopy(self.board.board)
         if self.do_display: print(self.board)
         
         while not self.game_over:
+            # process input
             if self.agent.type == 'human':
                 direction = self._process_user_input()
             else:
@@ -74,25 +96,7 @@ class Gameof2048:
 
             # if game not quit
             if not self.game_over:
-                afterstate, reward = self.board.move_tiles(direction, apply=True)
-                
-                self.game_over, new_tile_coords, new_tile_value = self.board.spawn_tile()
-                
-                self.moves += 1
-
-                self.gameplay['gameplay'].append({
-                    'move_made': direction,
-                    'new_tile_idx': new_tile_coords,
-                    'new_tile_val': int(new_tile_value),
-                    'move_idx': self.moves,
-                    'reward': int(reward),
-                })
-
-                self.board.score += reward
-                if self.do_display: print(self.board)
-                if self.watch: 
-                    print(f'Agent chose: {direction}')
-                    sleep(0.1)
+                self.do_move(direction=direction)
         
         if verbose: print(f'Final Score = {self.board.score}')
         return self.board.score    

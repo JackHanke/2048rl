@@ -6,14 +6,15 @@ import torch
 from torchinfo import summary
 
 from nets.net import PolicyValueNet
+from nets.agent import Agent
+from game.gameof2048 import Gameof2048
 
 def train():
     experiment_start_time = datetime.now()
 
-    with open('../config.yaml', 'r') as file: config = yaml.safe_load(file)
-    BATCH_SIZE = config['batch_size']
-    EPOCHS = config['epochs']
-    LEARNING_RATE = 1e-4
+    with open('config.yaml', 'r') as file: config = yaml.safe_load(file)
+    NUM_ITERS = config['num_iters']
+    NUM_GAMES_PER_ITER = config['num_games_per_iter']
 
     EMBEDDING_DIM = config['embedding_dim']
     NUM_LAYERS = config['num_layers']
@@ -28,25 +29,29 @@ def train():
 
     DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-    model = PolicyValueNet(
-        embedding_dim=EMBEDDING_DIM,
-        num_layers=NUM_LAYERS,
-    ).to(DEVICE)
-
-    summary_str = summary(model, input_size=(BATCH_SIZE, 4, 4, 17))
-    model_summary_str = '\n'+str(summary_str)
-    logger.info(model_summary_str)
-
-    optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
-    # best_loss = float('inf')
+    agent = Agent(device=DEVICE)
 
     logger.info(f"Starting experiment on: {experiment_start_time}")
-    for epoch in range(EPOCHS):
-        optimizer.zero_grad()
+    for iter_idx in range(NUM_ITERS):
+        agent.optimizer.zero_grad()
 
-        # TODO everything
+        games = [Gameof2048 for _ in range(NUM_GAMES_PER_ITER)]
+        games_playing = [i for i in range(NUM_GAMES_PER_ITER)]
 
-        # TODO add game parallelism
+        all_games_over = False
+        while not all_games_over:
+            # make state
+            actions = agent.choose([game.board for game in games if not game.game_over])
+
+            # make move
+            all_moves_over_check = True
+            for game, action in zip(games, actions):
+                if not game.game_over:
+                    game.do_move(direction=action)
+                    all_moves_over_check = False
+                    
+            all_games_over = all_moves_over_check
+
 
 if __name__ == "__main__":
     train()

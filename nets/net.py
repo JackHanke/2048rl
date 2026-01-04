@@ -15,6 +15,9 @@ class PolicyValueNet(nn.Module):
         # NOTE class token is embedding 18
         self.embeddings = torch.nn.Embedding(num_embeddings=18, embedding_dim=embedding_dim)
 
+        self.positional_encoding = nn.Parameter(torch.zeros(17, self.embedding_dim))
+        nn.init.xavier_uniform_(self.positional_encoding)  # Initialize with Xavier uniform
+
         self.torso = nn.Sequential(*[
             nn.TransformerEncoderLayer(
             d_model=self.embedding_dim,
@@ -39,14 +42,11 @@ class PolicyValueNet(nn.Module):
     def forward(self, x: torch.tensor):
         x = self.embeddings(x)
 
-        # TODO 2d positional embeddings
-        x = x
+        x = x + self.positional_encoding
         
         x = self.torso(x)
 
-        # mlps off of class token, as in ViT
-        policy = self.policy_head(x[:, 0])
-        policy_logits = policy # TODO
+        policy_logits = self.policy_head(x[:, 0])
 
         value = self.value_head(x[:, 0])
 
