@@ -8,7 +8,8 @@ logger = logging.getLogger(__name__)
 # TODO make Buffer handle multiple concurrent games
 
 class Buffer(Dataset):
-    def __init__(self, gamma: float = 0.99, lam: float = 0.95):
+    def __init__(self, games_per_iter:int, gamma: float = 0.99, lam: float = 0.95):
+        self.games_per_iter = games_per_iter
         self.gamma = gamma
         self.lam = lam
         self.reset()
@@ -29,13 +30,16 @@ class Buffer(Dataset):
         return results.reverse()
     
     def reset(self):
-        self.observationBuffer = []
-        self.actionBuffer = []
+        # 
+        self.observationBuffer = [[] for _ in range(self.games_per_iter)]
+        self.actionBuffer = [[] for _ in range(self.games_per_iter)]
+        self.rewardBuffer = [[] for _ in range(self.games_per_iter)]
+        self.valueBuffer = [[] for _ in range(self.games_per_iter)]
+        self.logprobabilityBuffer = [[] for _ in range(self.games_per_iter)]
+        # 
         self.advantageBuffer = []
-        self.rewardBuffer = []
         self.returnBuffer = []
-        self.valueBuffer = []
-        self.logprobabilityBuffer = []
+        # 
         self.trajectoryStartIndex = 0
         self.pointer = 0
 
@@ -44,13 +48,14 @@ class Buffer(Dataset):
             action: torch.tensor, 
             reward: torch.tensor, 
             value: torch.tensor, 
-            logprobability: torch.tensor
+            logprobability: torch.tensor,
+            game_idx: int = 0
         ):
-        self.observationBuffer.append(observation)
-        self.actionBuffer.append(action)
-        self.rewardBuffer.append(reward)
-        self.valueBuffer.append(value)
-        self.logprobabilityBuffer.append(logprobability)
+        self.observationBuffer[game_idx].append(observation)
+        self.actionBuffer[game_idx].append(action)
+        self.rewardBuffer[game_idx].append(reward)
+        self.valueBuffer[game_idx].append(value)
+        self.logprobabilityBuffer[game_idx].append(logprobability)
         self.pointer += 1
 
     def finish_trajectory(self):
@@ -75,3 +80,7 @@ class Buffer(Dataset):
             self.returnBuffer,
             self.logprobabilityBuffer,
         ]
+    
+    def flatten_buffers(self):
+        # TODO flatten buffers
+        pass

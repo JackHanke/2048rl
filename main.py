@@ -27,7 +27,7 @@ def main():
 
     logger.info(f"Starting experiment {experiment_start_time} on device: {DEVICE}")
     
-    agent = Agent(device=DEVICE)
+    agent = Agent(games_per_iter=NUM_GAMES_PER_ITER, device=DEVICE)
 
     for iter_idx in range(NUM_ITERS):
         games = [Gameof2048() for _ in range(NUM_GAMES_PER_ITER)]
@@ -39,12 +39,16 @@ def main():
 
             # make move
             all_moves_over_check = True
-            for game, action in zip(games, actions):
+            for game_idx, game, action in enumerate(zip(games, actions)):
                 if not game.game_over:
                     reward = game.do_move(direction=action)
                     all_moves_over_check = False
             
                     # TODO add reward to buffer
+                else:
+                    # TODO finish trajectory
+                    # TODO death reward
+                    pass
 
             all_games_over = all_moves_over_check
 
