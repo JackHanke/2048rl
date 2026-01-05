@@ -1,11 +1,14 @@
-## 
+## CONFIGS
+
+# inference ply
+ply: 0
 
 # experiment configs 
-epochs: 2
+num_games_per_iter: 4
 
 # training configs
+epochs: 2
 batch_size: 32
-num_games_per_iter: 4
 
 # model configs
 embedding_dim: 64

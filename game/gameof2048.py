@@ -54,7 +54,7 @@ class Gameof2048:
     
     def do_move(self, direction: int):
         afterstate, reward = self.board.move_tiles(direction, apply=True)
-                
+        
         self.game_over, new_tile_coords, new_tile_value = self.board.spawn_tile()
         
         self.moves += 1
@@ -73,12 +73,13 @@ class Gameof2048:
             print(f'Agent chose: {direction}')
             sleep(0.1)
     
+        return reward
+
     def play(self, verbose:bool = False):
         afterstate = deepcopy(self.board.board)
         if self.do_display: print(self.board)
         
         while not self.game_over:
-            # process input
             if self.agent.type == 'human':
                 direction = self._process_user_input()
             else:

@@ -5,6 +5,7 @@ import logging
 
 import torch
 from torchinfo import summary
+from torch.utils.data import DataLoader
 
 from nets.buffer import Buffer
 from nets.net import PolicyValueNet
@@ -24,28 +25,39 @@ class Agent:
     def __init__(
             self, 
             device,
-            ply: int = 0, 
             mode: str = 'inference',
         ):
         self.learning_rate = 1e-4
         self.batch_size = config['batch_size']
+        self.epochs = config['epochs']
         self.net = PolicyValueNet(
             embedding_dim=config['embedding_dim'],
             num_layers=config['num_layers'],
         ).to(device)
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr=self.learning_rate)
         self.buffer = Buffer()
-        self.ply = ply
+        self.ply = config['ply']
         self.mode = mode
 
         summary_str = summary(self.net, input_size=(self.batch_size, 4, 4, 17))
         model_summary_str = '\n'+str(summary_str)
         logger.info(model_summary_str)
 
+    def _process_logits(self, logits: torch.tensor) -> torch.tensor:
+        if self.mode == 'inference':
+            # argmax
+            probs = torch.argmax(logits, dim=1)
+            result = torch.multinomial(probs, num_samples=1)
+        elif self.mode == 'training':
+            # sample
+            result = torch.nn.functional.softmax(logits, dim=1)
+        return result
+
     def train(self):
         self.mode = 'training'
 
     def eval(self):
+        # self.optimizer.zero_grad()
         self.mode = 'inference'
 
     def choose(self, boards) -> torch.tensor:
@@ -57,27 +69,27 @@ class Agent:
         if self.ply == 0:
             logits, val = self.net(state_tensor)
 
-            # legal filter
+            # legal moves filter
             for board_idx, board in enumerate(boards):
                 for i in range(4):
                     if i not in board.legal_moves:
                         logits[board_idx][i] = -float('inf')
 
-            if self.mode == 'inference':
-                # argmax
-                probs = torch.argmax(logits, dim=1)
-                return torch.multinomial(probs, num_samples=1)
-            elif self.mode == 'training':
-                # sample
-                return torch.nn.functional.softmax(logits, dim=1)
+            result = self._process_logits(logits=logits)
+            return result
 
         else:
             # TODO expectimax
             pass
 
     def update(self):
+        # 
 
-        # TODO 
+        # train
+        for batch_idx, batch in enumerate(self.buffer):
+            pass
 
-        pass
+        # TODO checkpoint model
+
+        self.buffer.reset()
 

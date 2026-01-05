@@ -1,12 +1,34 @@
+import logging
+
 import torch
+from torch.utils.data import Dataset
 
+logger = logging.getLogger(__name__)
 
-class Buffer:
+# TODO make Buffer handle multiple concurrent games
+
+class Buffer(Dataset):
     def __init__(self, gamma: float = 0.99, lam: float = 0.95):
         self.gamma = gamma
         self.lam = lam
+        self.reset()
+        logger.info(f"Buffer initialized with γ={self.gamma}, λ={self.lam}")
 
-    def _reset(self):
+    def __len__(self):
+        return
+    
+    def __getitem__(self):
+        return
+
+    def _discounted_cumulative_sums(self, arr: list[int], coeff: float):
+        results = []
+        partial_sum = 0
+        for value in arr.reverse():
+            partial_sum = value + (partial_sum*coeff)
+            results.append(partial_sum)
+        return results.reverse()
+    
+    def reset(self):
         self.observationBuffer = []
         self.actionBuffer = []
         self.advantageBuffer = []
@@ -16,14 +38,6 @@ class Buffer:
         self.logprobabilityBuffer = []
         self.trajectoryStartIndex = 0
         self.pointer = 0
-
-    def _discounted_cumulative_sums(self, arr: list[int], coeff: float):
-        results = []
-        partial_sum = 0
-        for value in arr.reverse():
-            partial_sum = value + (partial_sum*coeff)
-            results.append(partial_sum)
-        return results.reverse()
 
     def add(self, 
             observation: torch.tensor, 
