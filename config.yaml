@@ -4,6 +4,7 @@
 ply: 0
 
 # experiment configs 
+num_iters: 2
 num_games_per_iter: 4
 
 # training configs

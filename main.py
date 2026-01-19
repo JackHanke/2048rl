@@ -1,9 +1,9 @@
 import yaml
 import logging
-import datetime
+from datetime import datetime
 
 import torch
-from torchinfo import summary
+from torchsummary import summary
 
 from nets.agent import Agent
 from game.gameof2048 import Gameof2048
@@ -14,6 +14,7 @@ def main():
     with open('config.yaml', 'r') as file: config = yaml.safe_load(file)
     NUM_ITERS = config['num_iters']
     NUM_GAMES_PER_ITER = config['num_games_per_iter']
+    PLY = config['ply']
 
     logger = logging.getLogger(__name__)
     logging.basicConfig(
@@ -25,9 +26,11 @@ def main():
 
     DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-    logger.info(f"Starting experiment {experiment_start_time} on device: {DEVICE}")
+    logger.info(f"Starting experiment: {experiment_start_time} on device: {DEVICE}")
     
-    agent = Agent(games_per_iter=NUM_GAMES_PER_ITER, device=DEVICE)
+    agent = Agent(ply=PLY, games_per_iter=NUM_GAMES_PER_ITER, device=DEVICE)
+    logger.info(f"Agent Initialized (with {PLY}-ply search)") 
+    logger.info(f"Playing {NUM_GAMES_PER_ITER} games per iteration for {NUM_ITERS} iterations")
 
     for iter_idx in range(NUM_ITERS):
         games = [Gameof2048() for _ in range(NUM_GAMES_PER_ITER)]
@@ -35,20 +38,25 @@ def main():
         all_games_over = False
         while not all_games_over:
             # make state
-            actions = agent.choose([game.board for game in games if not game.game_over])
+            boards = [game.board for game in games if not game.game_over]
+            actions, logits, values = agent.choose(boards=boards, return_logits=True)
 
             # make move
             all_moves_over_check = True
-            for game_idx, game, action in enumerate(zip(games, actions)):
+            for game_idx, (game, action) in enumerate(zip(games, actions)):
                 if not game.game_over:
-                    reward = game.do_move(direction=action)
                     all_moves_over_check = False
-            
-                    # TODO add reward to buffer
+                    reward = game.do_move(action=action)
+                    agent.add(
+                        board=game.board,
+                        action=action,
+                        reward=reward,
+                        logits=logits,
+                        value=values, 
+                        game_idx=game_idx,
+                    )
                 else:
-                    # TODO finish trajectory
-                    # TODO death reward
-                    pass
+                    agent.buffer.finish_trajectory(game_idx=game_idx)
 
             all_games_over = all_moves_over_check
 

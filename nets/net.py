@@ -54,7 +54,7 @@ class PolicyValueNet(nn.Module):
 
 if __name__ == '__main__':
     import yaml
-    with open('../config.yaml', 'r') as file: config = yaml.safe_load(file)
+    with open('config.yaml', 'r') as file: config = yaml.safe_load(file)
     EMBEDDING_DIM = config['embedding_dim']
     NUM_LAYERS = config['num_layers']
     BATCH_SIZE = config['batch_size']
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     )
     model.eval()
     
-    state = torch.randint(low=0, high=17, size=(BATCH_SIZE,17))
+    state = torch.randint(low=0, high=17, size=(BATCH_SIZE, 17))
     logits, value = model(state)
 
     summary(model, input_size=state.shape)

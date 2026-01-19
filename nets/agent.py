@@ -1,29 +1,22 @@
 import yaml
-from numpy import np
+import numpy as np
 from math import log
 import logging
 
 import torch
-from torchinfo import summary
+from torchsummary import summary
 from torch.utils.data import DataLoader
 
 from nets.buffer import Buffer
 from nets.net import PolicyValueNet
 
-def state_to_tensor(state_array: np.array) -> torch.tensor:
-    return_tensor = torch.zeros((1, 17))
-    return_tensor[0][0] = 18 # class token first
-    for i in range(4):
-        for j in range(4):
-            return_tensor[0][(4*i)+j+1] = state_array[i][j]
-    return return_tensor
-
-with open('../config.yaml', 'r') as file: config = yaml.safe_load(file)
+with open('config.yaml', 'r') as file: config = yaml.safe_load(file)
 logger = logging.getLogger(__name__)
 
 class Agent:
     def __init__(
             self, 
+            ply: int,
             device,
             games_per_iter: int,
             mode: str = 'training',
@@ -38,8 +31,9 @@ class Agent:
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr=self.learning_rate)
         self.games_per_iter = games_per_iter
         self.buffer = Buffer(games_per_iter=self.games_per_iter)
-        self.ply = config['ply']
+        self.ply = ply
         self.mode = mode
+        self.device=device
 
         self.epsilon = 0.2
 
@@ -47,33 +41,63 @@ class Agent:
         model_summary_str = '\n'+str(summary_str)
         logger.info(model_summary_str)
 
-    def _boards_to_tensor(self, boards) -> torch.tensor:
-        state = []
-        for board in boards:
-            state.append(state_to_tensor(board.board))
-        state_tensor = torch.stack(state, dim=0)
-        return state_tensor
+    def _loss_fn(self, 
+            predictions: torch.tensor,
+            observations: torch.tensor, 
+            actions: torch.tensor, 
+            logits: torch.tensor,
+            advantages: torch.tensor,
+            returns: torch.tensor,
+            values: torch.tensor,
+        ):
+        # loss from SPO paper: https://arxiv.org/abs/2401.16025
+        ratio = torch.exp(torch.nn.functional.log_softmax(predictions) - logits)
+        policy_loss = torch.mul(ratio, advantages) + \
+            torch.mul(
+                (-1/(2*self.epsilon))*torch.abs(advantages), 
+                torch.square(ratio-1)
+            )
+
+        value_loss_fn = torch.nn.MSELoss()
+        value_loss = value_loss_fn(values, returns)
+
+        loss = policy_loss + value_loss
+        return loss
+    
+    def _preprocess_reward(self, reward: float):
+        if reward <= 0: return 0
+        return log(reward, 2)
 
     def _get_legal_logits(self, boards) -> torch.tensor:
         state_tensor = self._boards_to_tensor(boards=boards)
 
-        logits, val = self.net(state_tensor)
+        logits, values = self.net(state_tensor)
         # legal moves filter
         for board_idx, board in enumerate(boards):
             for i in range(4):
                 if i not in board.legal_moves:
                     logits[board_idx][i] = -float('inf')
-        return logits
+        return logits, values
     
     def _process_logits(self, logits: torch.tensor) -> torch.tensor:
         if self.mode == 'inference':
             # argmax
-            probs = torch.argmax(logits, dim=1)
-            result = torch.multinomial(probs, num_samples=1)
+            result = torch.argmax(logits, dim=1) 
         elif self.mode == 'training':
             # sample
-            result = torch.nn.functional.softmax(logits, dim=1)
+            probs = torch.nn.functional.softmax(logits, dim=1)
+            result = torch.multinomial(probs, num_samples=1)
         return result
+
+    def _boards_to_tensor(self, boards) -> torch.tensor:
+        '''takes a list of n boards and makes an n,17 tensor with tile "tokens"'''
+        state_tensor = torch.zeros((len(boards), 17), dtype=torch.int)
+        for board_idx, board in enumerate(boards):
+            state_tensor[board_idx][0] = 17 # class token first
+            for i in range(4):
+                for j in range(4):
+                    state_tensor[board_idx][(4*i)+j+1] = int(board.board[i][j])
+        return state_tensor
 
     def train(self):
         self.mode = 'training'
@@ -82,38 +106,52 @@ class Agent:
         # self.optimizer.zero_grad()
         self.mode = 'inference'
 
-    def choose(self, boards) -> torch.tensor:
+    def choose(self, boards, return_logits:bool = False) -> torch.tensor:
         if self.ply == 0:
-            logits = self._get_legal_logits(boards=boards)
+            logits, values = self._get_legal_logits(boards=boards)
             result = self._process_logits(logits=logits)
+            if return_logits: return result, logits, values
             return result
         else:
-            # TODO expectimax
+            # TODO expecti-negamax
             pass
+
+    def add(self,
+            board, 
+            action: torch.tensor, 
+            reward: torch.tensor, 
+            logits: torch.tensor,
+            value: torch.tensor, 
+            game_idx: int = 0
+        ):
+
+        board_tensor = self._boards_to_tensor(boards=[board]).to(self.device)
+        processed_reward = self._preprocess_reward(reward=reward)
+
+        self.buffer.add(
+            observation=board_tensor,
+            action=action,
+            reward=processed_reward,
+            logits=logits,
+            value=value,
+            game_idx=game_idx,
+        )
 
     def update(self):
         # 
+        self.buffer.flatten_buffers()
 
         buffer_dataloader = DataLoader(self.buffer, batch_size=self.batch_size, shuffle=True)
-        for batch_idx, batch in enumerate(buffer_dataloader):
-            # TODO logits, value, actions, returns, state, advantage
-            
-            # TODO send tensors to device
-            # SPO Loss from: https://arxiv.org/abs/2401.16025
-            policy_loss = None
-            value_loss_fn = torch.nn.MSELoss()
+        for batch_idx, (observations, actions, logits, advantages, returns) in enumerate(buffer_dataloader):
+            # 
+            predictions, values = self.net(observations)
 
-            value_loss = value_loss_fn(value, returns)
-
-            loss = policy_loss + value_loss
+            loss = self._loss_fn(predictions, observations, actions, logits, advantages, values, returns)
 
             loss.backward()
             self.optimizer.step()
 
             logger.debug(f'Batch {batch_idx} completed with loss: {loss.item():.6f}')
-            pass
-
-        # TODO checkpoint model
 
         self.buffer.reset()
 

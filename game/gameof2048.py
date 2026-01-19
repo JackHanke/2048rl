@@ -4,14 +4,14 @@ from copy import deepcopy
 from game.board import Board
 
 class Gameof2048:
-    def __init__(self, agent, watch:bool = False):
+    def __init__(self, agent = None, watch:bool = False):
         self.game_over = False
         self.board = Board()
         self.agent = agent
         self.watch = watch
         self.moves = 0
         # 
-        self.do_display = self.agent.type == 'human' or self.watch
+        self.do_display = self.watch
         self.needs_afterstates = False
 
         """
@@ -33,34 +33,34 @@ class Gameof2048:
         }
 
     def _process_user_input(self):
-        direction = None
+        action = None
         while True:
-            direction = input()
+            action = input()
             error_msg = 'Please enter 0 (Up) 1 (Right) 2 (Down) 3 (Left)\n'
             try:
-                direction = int(direction)
-                if (direction not in self.board.legal_moves) or (direction not in (0,1,2,3)):
+                action = int(action)
+                if (action not in self.board.legal_moves) or (action not in (0,1,2,3)):
                     print(error_msg)
                     continue
                 else:
                     break
             except ValueError:
-                if direction in ('q', 'Q', 'quit', 'Quit', 'QUIT'):
+                if action in ('q', 'Q', 'quit', 'Quit', 'QUIT'):
                     self.game_over = True
                     break
                 else:
                     print(error_msg)
-        return direction
+        return action
     
-    def do_move(self, direction: int):
-        afterstate, reward = self.board.move_tiles(direction, apply=True)
+    def do_move(self, action: int):
+        afterstate, reward = self.board.move_tiles(action, apply=True)
         
         self.game_over, new_tile_coords, new_tile_value = self.board.spawn_tile()
         
         self.moves += 1
 
         self.gameplay['gameplay'].append({
-            'move_made': direction,
+            'move_made': action,
             'new_tile_idx': new_tile_coords,
             'new_tile_val': int(new_tile_value),
             'move_idx': self.moves,
@@ -70,7 +70,7 @@ class Gameof2048:
         self.board.score += reward
         if self.do_display: print(self.board)
         if self.watch: 
-            print(f'Agent chose: {direction}')
+            print(f'Agent chose: {action}')
             sleep(0.1)
     
         return reward
@@ -81,23 +81,23 @@ class Gameof2048:
         
         while not self.game_over:
             if self.agent.type == 'human':
-                direction = self._process_user_input()
+                action = self._process_user_input()
             else:
                 if self.needs_afterstates:
                     afterstates = []
                     for move in self.board.legal_moves:
                         temp_afterstate, reward = self.board.move_tiles(move, apply=False)
                         afterstates.append((move, reward, temp_afterstate))
-                    direction = self.agent.choose(
+                    action = self.agent.choose(
                         state = self.board.board,
                         afterstates = afterstates
                     )
                 else:
-                    direction = self.agent.choose(board = self.board)
+                    action = self.agent.choose(board = self.board)
 
             # if game not quit
             if not self.game_over:
-                self.do_move(direction=direction)
+                self.do_move(action=action)
         
         if verbose: print(f'Final Score = {self.board.score}')
         return self.board.score    

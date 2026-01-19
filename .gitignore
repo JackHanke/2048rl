@@ -13,3 +13,7 @@ pytorch-neat/neat/experiments/gameof2048/checkpoints/*
 # checkpoints for model
 nets/checkpoints/*
 !nets/checkpoints/.gitkeep
+
+nets/logs/*
+!nets/logs/.gitkeep
+
