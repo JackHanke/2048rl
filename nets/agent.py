@@ -35,7 +35,11 @@ class Agent:
         self.mode = mode
         self.device=device
 
-        self.epsilon = 0.2
+        # loss hyperparameters
+        self.epsilon = 0.2 # PPO/SPO epsilon
+        self.c_1 = 1       # weight to value function
+        self.c_2 = 1e-5    # 
+
 
         summary_str = summary(self.net, input_size=(self.batch_size, 4, 4, 17))
         model_summary_str = '\n'+str(summary_str)
@@ -50,23 +54,44 @@ class Agent:
             returns: torch.tensor,
             values: torch.tensor,
         ):
+        ## policy loss
+        # TODO fix there are infs here!
         # loss from SPO paper: https://arxiv.org/abs/2401.16025
-        ratio = torch.exp(torch.nn.functional.log_softmax(predictions) - logits)
-        policy_loss = torch.mul(ratio, advantages) + \
+
+        all_probs_ratio = torch.exp(torch.nn.functional.log_softmax(predictions, dim=1) - \
+                                    torch.nn.functional.log_softmax(logits, dim=1))
+        ratio = all_probs_ratio[torch.arange(actions.shape[0]), actions]
+
+        policy_losses = torch.mul(ratio, advantages) + \
             torch.mul(
                 (-1/(2*self.epsilon))*torch.abs(advantages), 
                 torch.square(ratio-1)
             )
+        policy_loss = torch.mean(policy_losses, dim=0)
 
+        ## value loss 
         value_loss_fn = torch.nn.MSELoss()
         value_loss = value_loss_fn(values, returns)
 
-        loss = policy_loss + value_loss
+        ## entropy loss
+        entropy_loss = 0
+
+        loss = policy_loss + self.c_1*value_loss # + self.c_2*entropy_loss
         return loss
     
     def _preprocess_reward(self, reward: float):
         if reward <= 0: return 0
         return log(reward, 2)
+
+    def _boards_to_tensor(self, boards) -> torch.tensor:
+        '''takes a list of n boards and makes an n,17 tensor with tile "tokens"'''
+        state_tensor = torch.zeros((len(boards), 17), dtype=torch.int).to(self.device)
+        for board_idx, board in enumerate(boards):
+            state_tensor[board_idx][0] = 17 # class token first
+            for i in range(4):
+                for j in range(4):
+                    state_tensor[board_idx][(4*i)+j+1] = int(board.board[i][j])
+        return state_tensor
 
     def _get_legal_logits(self, boards) -> torch.tensor:
         state_tensor = self._boards_to_tensor(boards=boards)
@@ -76,7 +101,7 @@ class Agent:
         for board_idx, board in enumerate(boards):
             for i in range(4):
                 if i not in board.legal_moves:
-                    logits[board_idx][i] = -float('inf')
+                    logits[board_idx][i] = -6 #-float('inf')
         return logits, values
     
     def _process_logits(self, logits: torch.tensor) -> torch.tensor:
@@ -88,16 +113,6 @@ class Agent:
             probs = torch.nn.functional.softmax(logits, dim=1)
             result = torch.multinomial(probs, num_samples=1)
         return result
-
-    def _boards_to_tensor(self, boards) -> torch.tensor:
-        '''takes a list of n boards and makes an n,17 tensor with tile "tokens"'''
-        state_tensor = torch.zeros((len(boards), 17), dtype=torch.int)
-        for board_idx, board in enumerate(boards):
-            state_tensor[board_idx][0] = 17 # class token first
-            for i in range(4):
-                for j in range(4):
-                    state_tensor[board_idx][(4*i)+j+1] = int(board.board[i][j])
-        return state_tensor
 
     def train(self):
         self.mode = 'training'
@@ -125,15 +140,15 @@ class Agent:
             game_idx: int = 0
         ):
 
-        board_tensor = self._boards_to_tensor(boards=[board]).to(self.device)
+        board_tensor = self._boards_to_tensor(boards=[board])[0]
         processed_reward = self._preprocess_reward(reward=reward)
 
         self.buffer.add(
             observation=board_tensor,
             action=action,
             reward=processed_reward,
-            logits=logits,
-            value=value,
+            logits=logits.detach(),
+            value=value.detach(),
             game_idx=game_idx,
         )
 
@@ -143,8 +158,23 @@ class Agent:
 
         buffer_dataloader = DataLoader(self.buffer, batch_size=self.batch_size, shuffle=True)
         for batch_idx, (observations, actions, logits, advantages, returns) in enumerate(buffer_dataloader):
+            ## preprocessing
+            advantages = advantages.squeeze(1)
+            returns = returns.unsqueeze(1).float().to(self.device)
+
+            # print(observations.shape, observations.device, observations.dtype)
+            # print(actions.shape, actions.device, actions.dtype)
+            # print(logits.shape, logits.device, logits.dtype)
+            # print(advantages.shape, advantages.device, advantages.dtype)
+            # print(returns.shape, returns.device, returns.dtype)
+
             # 
             predictions, values = self.net(observations)
+
+
+            # print(predictions.shape, predictions.device, predictions.dtype)
+            # print(values.shape, values.device, values.dtype)
+            # input()
 
             loss = self._loss_fn(predictions, observations, actions, logits, advantages, values, returns)
 

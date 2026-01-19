@@ -4,13 +4,13 @@
 ply: 0
 
 # experiment configs 
-num_iters: 2
-num_games_per_iter: 4
+num_iters: 1000
+num_games_per_iter: 10
 
 # training configs
 epochs: 2
-batch_size: 32
+batch_size: 128
 
 # model configs
-embedding_dim: 64
-num_layers: 3
+embedding_dim: 128
+num_layers: 8

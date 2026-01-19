@@ -17,7 +17,11 @@ class Buffer(Dataset):
         return len(self.return_buffer)
     
     def __getitem__(self, idx):
-        return self.observation_buffer[idx], self.action_buffer[idx], self.logits_buffer[idx], self.advantage_buffer[idx], self.value_buffer[idx], self.return_buffer[idx]
+        return self.observation_buffer[idx], \
+            self.action_buffer[idx],    \
+            self.logits_buffer[idx],    \
+            self.advantage_buffer[idx], \
+            self.return_buffer[idx]
 
     def _discounted_cumulative_sums(self, arr: list[int], coeff: float):
         results = []
@@ -37,6 +41,8 @@ class Buffer(Dataset):
         # derived buffers
         self.advantage_buffer = [[] for _ in range(self.games_per_iter)]
         self.return_buffer = [[] for _ in range(self.games_per_iter)]
+        # finished_buffer if game at idx has processed trajectory
+        self.finished_buffer = [False for _ in range(self.games_per_iter)]
 
     def add(self, 
             observation: torch.tensor, 
@@ -53,7 +59,7 @@ class Buffer(Dataset):
         self.logits_buffer[game_idx].append(logits)
 
     def finish_trajectory(self, game_idx: int):
-        lastValue = 0
+        lastValue = 0.0
 
         self.reward_buffer[game_idx].append(lastValue*self.gamma)
         self.value_buffer[game_idx].append(lastValue)
@@ -70,8 +76,10 @@ class Buffer(Dataset):
         self.return_buffer[game_idx].pop() # remove last value from this game's return buffer
         self.advantage_buffer[game_idx].extend(self._discounted_cumulative_sums(deltas, self.gamma*self.lam))
 
+        self.finished_buffer[game_idx] = True
+
     def flatten_buffers(self):
-        '''turn individual game buffers into a single shared buffers'''
+        '''turn individual game buffers into single shared buffers'''
         self.observation_buffer = [i for game_buffer in self.observation_buffer for i in game_buffer]
         self.action_buffer = [i for game_buffer in self.action_buffer for i in game_buffer]
         self.reward_buffer = [i for game_buffer in self.reward_buffer for i in game_buffer]

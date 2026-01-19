@@ -3,7 +3,7 @@ import yaml
 import json
 from time import time
 from math import log
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import torch
 from torchsummary import summary
 
@@ -64,7 +64,7 @@ def benchmark_network(
     start_time = time()
     for _ in range(num_inferences):
         # make reasonable random state
-        state = torch.randint(low=0, high=17, size=(batch_size, 17))
+        state = torch.randint(low=0, high=17, size=(batch_size, 17)).to(DEVICE)
         # forward pass
         logits, value = model(state)
 
@@ -145,5 +145,5 @@ if __name__ == '__main__':
 
     ## model inference benchmark
     num_inferences = 1_000
-    batch_size = 2
+    batch_size = 32
     benchmark_network(batch_size=batch_size, num_inferences=num_inferences)
