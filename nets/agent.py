@@ -39,7 +39,7 @@ class Agent:
         ## loss hyperparameters
         self.epsilon = 0.2 # PPO/SPO epsilon
         self.c_1 = 1       # weight to value loss term
-        self.c_2 = 1e-5    # weight of policy entropy term
+        # self.c_2 = 1e-5    # weight of policy entropy term
 
 
         summary_str = summary(self.net, input_size=(self.batch_size, 4, 4, 17))
@@ -75,9 +75,9 @@ class Agent:
         value_loss = value_loss_fn(values, returns)
 
         ## entropy loss
-        entropy_loss = torch.mean(Categorical(probs=torch.nn.functional.softmax(predictions, dim=1)).entropy(), dim=0)
+        # entropy_loss = torch.mean(Categorical(probs=torch.nn.functional.softmax(predictions, dim=1)).entropy(), dim=0)
 
-        loss = policy_loss + self.c_1*value_loss + self.c_2*entropy_loss
+        loss = policy_loss + self.c_1*value_loss # + self.c_2*entropy_loss
         return loss
     
     def _preprocess_reward(self, reward: float):
