@@ -41,8 +41,6 @@ class Buffer(Dataset):
         # derived buffers
         self.advantage_buffer = [[] for _ in range(self.games_per_iter)]
         self.return_buffer = [[] for _ in range(self.games_per_iter)]
-        # finished_buffer if game at idx has processed trajectory
-        self.finished_buffer = [False for _ in range(self.games_per_iter)]
 
     def add(self, 
             observation: torch.tensor, 
@@ -75,8 +73,6 @@ class Buffer(Dataset):
         self.return_buffer[game_idx].extend(self._discounted_cumulative_sums(self.reward_buffer[game_idx], self.gamma))
         self.return_buffer[game_idx].pop() # remove last value from this game's return buffer
         self.advantage_buffer[game_idx].extend(self._discounted_cumulative_sums(deltas, self.gamma*self.lam))
-
-        self.finished_buffer[game_idx] = True
 
     def flatten_buffers(self):
         '''turn individual game buffers into single shared buffers'''

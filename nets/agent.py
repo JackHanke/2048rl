@@ -5,6 +5,7 @@ import logging
 
 import torch
 from torchsummary import summary
+from torch.distributions import Categorical
 from torch.utils.data import DataLoader
 
 from nets.buffer import Buffer
@@ -35,15 +36,16 @@ class Agent:
         self.mode = mode
         self.device=device
 
-        # loss hyperparameters
+        ## loss hyperparameters
         self.epsilon = 0.2 # PPO/SPO epsilon
-        self.c_1 = 1       # weight to value function
-        self.c_2 = 1e-5    # 
+        self.c_1 = 1       # weight to value loss term
+        self.c_2 = 1e-5    # weight of policy entropy term
 
 
         summary_str = summary(self.net, input_size=(self.batch_size, 4, 4, 17))
         model_summary_str = '\n'+str(summary_str)
         logger.info(model_summary_str)
+        logger.info(f'Agent trains for epochs {self.epochs} at batch size: {self.batch_size} ')
 
     def _loss_fn(self, 
             predictions: torch.tensor,
@@ -55,7 +57,6 @@ class Agent:
             values: torch.tensor,
         ):
         ## policy loss
-        # TODO fix there are infs here!
         # loss from SPO paper: https://arxiv.org/abs/2401.16025
 
         all_probs_ratio = torch.exp(torch.nn.functional.log_softmax(predictions, dim=1) - \
@@ -74,9 +75,9 @@ class Agent:
         value_loss = value_loss_fn(values, returns)
 
         ## entropy loss
-        entropy_loss = 0
+        entropy_loss = torch.mean(Categorical(probs=torch.nn.functional.softmax(predictions, dim=1)).entropy(), dim=0)
 
-        loss = policy_loss + self.c_1*value_loss # + self.c_2*entropy_loss
+        loss = policy_loss + self.c_1*value_loss + self.c_2*entropy_loss
         return loss
     
     def _preprocess_reward(self, reward: float):
@@ -97,12 +98,13 @@ class Agent:
         state_tensor = self._boards_to_tensor(boards=boards)
 
         logits, values = self.net(state_tensor)
+        legal_logits = logits.detach().clone()
         # legal moves filter
         for board_idx, board in enumerate(boards):
             for i in range(4):
                 if i not in board.legal_moves:
-                    logits[board_idx][i] = -6 #-float('inf')
-        return logits, values
+                    legal_logits[board_idx][i] = -1e8
+        return legal_logits, logits, values
     
     def _process_logits(self, logits: torch.tensor) -> torch.tensor:
         if self.mode == 'inference':
@@ -123,8 +125,8 @@ class Agent:
 
     def choose(self, boards, return_logits:bool = False) -> torch.tensor:
         if self.ply == 0:
-            logits, values = self._get_legal_logits(boards=boards)
-            result = self._process_logits(logits=logits)
+            legal_logits, logits, values = self._get_legal_logits(boards=boards)
+            result = self._process_logits(logits=legal_logits)
             if return_logits: return result, logits, values
             return result
         else:

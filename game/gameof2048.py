@@ -4,7 +4,8 @@ from copy import deepcopy
 from game.board import Board
 
 class Gameof2048:
-    def __init__(self, agent = None, watch:bool = False):
+    def __init__(self, game_idx: int = 0, agent = None, watch:bool = False):
+        self.game_idx = game_idx
         self.game_over = False
         self.board = Board()
         self.agent = agent
@@ -53,6 +54,7 @@ class Gameof2048:
         return action
     
     def do_move(self, action: int):
+        # if action not in self.board.legal_moves: print('Illegal move made!')
         afterstate, reward = self.board.move_tiles(action, apply=True)
         
         self.game_over, new_tile_coords, new_tile_value = self.board.spawn_tile()
