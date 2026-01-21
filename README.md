@@ -31,7 +31,7 @@ When evaluating an agent in 2048, use the `benchmark_agent` function in `benchma
 Resources for DeepRL approach:
 - [Expecimax](https://en.wikipedia.org/wiki/Expectiminimax)
 - [On Reinforcement Learning for the Game of 2048](https://arxiv.org/abs/2212.11087)
-- [Strongly Solving 2048 4x3](https://arxiv.org/abs/2510.04580v1)
+- The 4x3 version is strongly solved: [Strongly Solving 2048 4x3](https://arxiv.org/abs/2510.04580v1), somewhat like the (weakly) solved [checkers](https://www.researchgate.net/publication/231216842_Checkers_Is_Solved)
 - [RoFormer: Enhanced Transformer with Rotary Position Embedding](https://arxiv.org/abs/2104.09864)
 - [Rethinking and Improving Relative Position Encoding for Vision Transformer](https://openaccess.thecvf.com/content/ICCV2021/papers/Wu_Rethinking_and_Improving_Relative_Position_Encoding_for_Vision_Transformer_ICCV_2021_paper.pdf)
 
