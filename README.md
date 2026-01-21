@@ -29,7 +29,11 @@ When evaluating an agent in 2048, use the `benchmark_agent` function in `benchma
 ## Sources:
 
 Resources for DeepRL approach:
-- TODO
+- [Expecimax](https://en.wikipedia.org/wiki/Expectiminimax)
+- [On Reinforcement Learning for the Game of 2048](https://arxiv.org/abs/2212.11087)
+- [Strongly Solving 2048 4x3](https://arxiv.org/abs/2510.04580v1)
+- [RoFormer: Enhanced Transformer with Rotary Position Embedding](https://arxiv.org/abs/2104.09864)
+- [Rethinking and Improving Relative Position Encoding for Vision Transformer](https://openaccess.thecvf.com/content/ICCV2021/papers/Wu_Rethinking_and_Improving_Relative_Position_Encoding_for_Vision_Transformer_ICCV_2021_paper.pdf)
 
 Resources used for from scratch TD Learning: 
 - [Temporal Difference Learning of N-Tuple Networks for the Game 2048](https://www.cs.put.poznan.pl/wjaskowski/pub/papers/Szubert2014_2048.pdf) for a reference implementation. 
