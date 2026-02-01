@@ -17,3 +17,6 @@ nets/checkpoints/*
 nets/logs/*
 !nets/logs/.gitkeep
 
+
+nets/data/*
+!nets/data/format.py

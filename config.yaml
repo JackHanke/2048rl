@@ -11,6 +11,10 @@ num_games_per_iter: 100
 epochs: 10
 batch_size: 128
 
+# pretraining configs
+pretraining_epochs: 10
+pretraining_batch_size: 2048
+
 # model configs
 embedding_dim: 64
 num_layers: 8

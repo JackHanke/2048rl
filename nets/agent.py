@@ -20,15 +20,19 @@ class Agent:
             ply: int,
             device,
             games_per_iter: int,
+            net = None,
             mode: str = 'training',
         ):
         self.learning_rate = 1e-4
         self.batch_size = config['batch_size']
         self.epochs = config['epochs']
-        self.net = PolicyValueNet(
-            embedding_dim=config['embedding_dim'],
-            num_layers=config['num_layers'],
-        ).to(device)
+        if net is None:
+            self.net = PolicyValueNet(
+                embedding_dim=config['embedding_dim'],
+                num_layers=config['num_layers'],
+            ).to(device)
+        else:
+            self.net = net.to(device)
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr=self.learning_rate)
         self.games_per_iter = games_per_iter
         self.buffer = Buffer(games_per_iter=self.games_per_iter)

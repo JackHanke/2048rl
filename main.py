@@ -10,7 +10,8 @@ import torch
 from torchsummary import summary
 
 from nets.agent import Agent
-from game.gameof2048 import Gameof2048
+from eval import batch_eval
+
 
 def main():
     experiment_start_time = datetime.now()
@@ -24,7 +25,7 @@ def main():
     logger = logging.getLogger(__name__)
     # logger.addHandler(logging.StreamHandler(sys.stdout))
     logging.basicConfig(
-        filename=f'nets/logs/experiment-{experiment_start_time_str}.log',
+        filename=f'nets/logs/finetuning/experiment-{experiment_start_time_str}.log',
         filemode='w',
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s'
@@ -34,43 +35,20 @@ def main():
 
     logger.info(f"Starting experiment: {experiment_start_time_str} on device: {DEVICE}")
     
-    agent = Agent(ply=PLY, games_per_iter=NUM_GAMES_PER_ITER, device=DEVICE)
+    agent = Agent(
+        ply=PLY, 
+        games_per_iter=NUM_GAMES_PER_ITER, 
+        device=DEVICE
+    )
+
+    # TODO load network
+
     logger.info(f"Agent Initialized (with {PLY}-ply search)") 
     logger.info(f"Playing {NUM_GAMES_PER_ITER} games per iteration for {NUM_ITERS} iterations")
 
     prog_bar = tqdm(range(NUM_ITERS))
     for iter_idx in prog_bar:
-        games = [Gameof2048(game_idx=game_idx) for game_idx in range(NUM_GAMES_PER_ITER)]
-        moves_played = 0
-        all_games_over = False
-        while not all_games_over:
-            # make state
-            boards = [game.board for game in games if not game.game_over]
-            if len(boards) == 0: 
-                all_games_over = True
-            else:
-                actions, logits, values = agent.choose(boards=boards, return_logits=True)
-
-                # make move
-                schedule = [game for game in games if not game.game_over]
-                for playing_game_idx, game in enumerate(schedule):
-                    action = actions[playing_game_idx].item()
-                    reward = game.do_move(action=action)
-                    moves_played += 1
-                    agent.add(
-                        board=game.board,
-                        action=action,
-                        reward=reward,
-                        logits=logits[playing_game_idx],
-                        value=values[playing_game_idx], 
-                        game_idx=game.game_idx,
-                    )
-                    # if game.do_move ended the game, finish trajectory
-                    if game.game_over:
-                        agent.buffer.finish_trajectory(game_idx=game.game_idx)
-
-        ## 
-        scores = [int(game.board.score) for game in games]
+        scores = batch_eval(agent=agent, batch_size=NUM_GAMES_PER_ITER, doing_rl_training=True)
         max_score = max(scores)
         average_score = sum(scores)/len(scores)
         stdevs_score = stdev(scores)
