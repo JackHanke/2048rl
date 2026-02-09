@@ -17,6 +17,9 @@ nets/checkpoints/*
 nets/logs/*
 !nets/logs/.gitkeep
 
-
 nets/data/*
 !nets/data/format.py
+
+# more places for checkpoints lol
+nets/models/*
+!nets/models/.gitkeep

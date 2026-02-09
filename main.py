@@ -10,6 +10,7 @@ import torch
 from torchsummary import summary
 
 from nets.agent import Agent
+from nets .net import PolicyValueNet
 from eval import batch_eval
 
 
@@ -35,13 +36,27 @@ def main():
 
     logger.info(f"Starting experiment: {experiment_start_time_str} on device: {DEVICE}")
     
-    agent = Agent(
-        ply=PLY, 
-        games_per_iter=NUM_GAMES_PER_ITER, 
+    net = PolicyValueNet(
+        embedding_dim=config['embedding_dim'],
+        num_layers=config['num_layers'],
         device=DEVICE
-    )
+    ).to(DEVICE)
 
-    # TODO load network
+    load_model = True
+    if load_model:
+        LOAD_MODEL_PATH = f'./nets/models/pretraining/2026-02-08-00:14:07_57_3239.09_0.693.pth'
+        net.load_state_dict(torch.load(LOAD_MODEL_PATH, weights_only=True), strict=False)
+        logger.info(f'Beginning from checkpoint: {LOAD_MODEL_PATH}')
+    else:
+        logger.info(f'Beginning from scratch.')
+
+    agent = Agent(
+        ply=PLY,
+        net = net,
+        games_per_iter=NUM_GAMES_PER_ITER, 
+        device=DEVICE,
+        mode='training'
+    )
 
     logger.info(f"Agent Initialized (with {PLY}-ply search)") 
     logger.info(f"Playing {NUM_GAMES_PER_ITER} games per iteration for {NUM_ITERS} iterations")

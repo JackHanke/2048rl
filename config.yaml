@@ -5,16 +5,16 @@ ply: 0
 
 # experiment configs 
 num_iters: 1000
-num_games_per_iter: 100
+num_games_per_iter: 2048
 
 # training configs
 epochs: 10
-batch_size: 128
+batch_size: 8192
 
 # pretraining configs
-pretraining_epochs: 10
-pretraining_batch_size: 2048
+pretraining_epochs: 100
+pretraining_batch_size: 8192
 
 # model configs
-embedding_dim: 64
-num_layers: 8
+embedding_dim: 128
+num_layers: 6

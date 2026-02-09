@@ -20,19 +20,14 @@ class Agent:
             ply: int,
             device,
             games_per_iter: int,
-            net = None,
+            net,
             mode: str = 'training',
         ):
-        self.learning_rate = 1e-4
+        self.learning_rate = 1e-5
         self.batch_size = config['batch_size']
         self.epochs = config['epochs']
-        if net is None:
-            self.net = PolicyValueNet(
-                embedding_dim=config['embedding_dim'],
-                num_layers=config['num_layers'],
-            ).to(device)
-        else:
-            self.net = net.to(device)
+        
+        self.net = net.to(device)
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr=self.learning_rate)
         self.games_per_iter = games_per_iter
         self.buffer = Buffer(games_per_iter=self.games_per_iter)
@@ -41,8 +36,8 @@ class Agent:
         self.device=device
 
         ## loss hyperparameters
-        self.epsilon = 0.2 # PPO/SPO epsilon
-        self.c_1 = 1       # weight to value loss term
+        self.epsilon = 0.2  # PPO/SPO epsilon
+        self.c_1 = 0.1        # weight to value loss term
         # self.c_2 = 1e-5    # weight of policy entropy term
 
 
@@ -102,6 +97,9 @@ class Agent:
         state_tensor = self._boards_to_tensor(boards=boards)
 
         logits, values = self.net(state_tensor)
+        # logits = self.net(state_tensor)
+        # values = None
+
         legal_logits = logits.detach().clone()
         # legal moves filter
         for board_idx, board in enumerate(boards):
