@@ -9,9 +9,9 @@ from tqdm import tqdm
 import torch
 from torchsummary import summary
 
-from nets.agent import Agent
-from nets .net import PolicyValueNet
-from eval import batch_eval
+from nets.agent import TDAgent
+from nets.net import ValueNet
+from eval import batch_eval_td
 
 
 def main():
@@ -26,7 +26,7 @@ def main():
     logger = logging.getLogger(__name__)
     # logger.addHandler(logging.StreamHandler(sys.stdout))
     logging.basicConfig(
-        filename=f'nets/logs/finetuning/experiment-{experiment_start_time_str}.log',
+        filename=f'nets/logs/experiment-{experiment_start_time_str}.log',
         filemode='w',
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s'
@@ -36,13 +36,15 @@ def main():
 
     logger.info(f"Starting experiment: {experiment_start_time_str} on device: {DEVICE}")
     
-    net = PolicyValueNet(
+    net = ValueNet(
         embedding_dim=config['embedding_dim'],
         num_layers=config['num_layers'],
+        num_heads=config['num_heads'],
+        expand=config['expand'],
         device=DEVICE
     ).to(DEVICE)
 
-    load_model = True
+    load_model = False
     if load_model:
         LOAD_MODEL_PATH = f'./nets/models/pretraining/2026-02-08-00:14:07_57_3239.09_0.693.pth'
         net.load_state_dict(torch.load(LOAD_MODEL_PATH, weights_only=True), strict=False)
@@ -50,7 +52,7 @@ def main():
     else:
         logger.info(f'Beginning from scratch.')
 
-    agent = Agent(
+    agent = TDAgent(
         ply=PLY,
         net = net,
         games_per_iter=NUM_GAMES_PER_ITER, 
@@ -63,7 +65,7 @@ def main():
 
     prog_bar = tqdm(range(NUM_ITERS))
     for iter_idx in prog_bar:
-        scores = batch_eval(agent=agent, batch_size=NUM_GAMES_PER_ITER, doing_rl_training=True)
+        scores = batch_eval_td(agent=agent, batch_size=NUM_GAMES_PER_ITER, doing_rl_training=True)
         max_score = max(scores)
         average_score = sum(scores)/len(scores)
         stdevs_score = stdev(scores)
@@ -73,7 +75,6 @@ def main():
         prog_bar.set_description(status_str)
         
         agent.update()
-        
 
     final_str = f'{NUM_ITERS} iterations of {NUM_GAMES_PER_ITER} games each completed in {(datetime.now() - experiment_start_time)}.'
     print(final_str)

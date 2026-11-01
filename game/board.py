@@ -27,11 +27,16 @@ def shiftRight(board: np.array):
 class Board:
     def __init__(self, given_board=None):
         # NOTE board uses log_2() of the tile value internally
-        if given_board is not None: self.board = given_board
-        else: self.board = np.zeros((4,4), dtype=np.uint32)
-        self.score = 0
-        self.legal_moves = [i for i in range(4)]
+        print('board inited')
+        if given_board is not None: 
+            self.board = given_board
+            self.legal_moves = self._get_legal_moves()
+        else: 
+            self.board = np.zeros((4,4), dtype=np.uint32)
+            self.legal_moves = [i for i in range(4)]
+
         self.highest_tile = 0
+        self.score = 0
 
     def __repr__(self): 
         system('clear')
@@ -49,39 +54,53 @@ class Board:
     def _get_legal_moves(self):
         legal_moves = []
         # check for up (and possibly down)
+        found = False
         for i in range(3):
             for j in range(4):
                 if self.board[i][j] == self.board[i+1][j] and self.board[i][j] != 0:
                     legal_moves.append(0)
                     legal_moves.append(2)
+                    found = True
                     break
                 elif self.board[i][j] == 0 and self.board[i+1][j] != 0:
                     legal_moves.append(0)
+                    found = True
                     break
+            if found: break
         # check down 
+        found = False
         if 2 not in legal_moves:
             for i in range(3):
                 for j in range(4):
                     if self.board[i][j] != 0 and self.board[i+1][j] == 0:
                         legal_moves.append(2)
+                        found = True
                         break
+                if found: break
         # check for right (and possibly left)
+        found = False
         for i in range(4):
             for j in range(3):
                 if self.board[i][j] == self.board[i][j+1] and self.board[i][j] != 0:
                     legal_moves.append(1)
                     legal_moves.append(3)
+                    found = True
                     break
                 elif self.board[i][j] != 0 and self.board[i][j+1] == 0:
                     legal_moves.append(1)
+                    found = True
                     break
+            if found: break
         # check left
+        found = False
         if 3 not in legal_moves:
             for i in range(4):
                 for j in range(3):
                     if self.board[i][j] == 0 and self.board[i][j+1] != 0:
                         legal_moves.append(3)
+                        found = True
                         break
+                if found: break
         return legal_moves
 
     def _moveLeft(self, board: np.array, apply:bool = False):
@@ -132,17 +151,21 @@ class Board:
         board = board.transpose()
         return board, score
     
+    def get_empty_cells_list(self):
+        empty_cells = []
+        for i in range(4):
+            for j in range(4):
+                if self.board[i][j] == 0:
+                    empty_cells.append((i,j))
+        return empty_cells
+    
     def start(self):
         self.spawn_tile()
         self.spawn_tile()
 
     def spawn_tile(self):
         # spawns tile on self.board object
-        empty_cells = []
-        for i in range(4):
-            for j in range(4):
-                if self.board[i][j] == 0:
-                    empty_cells.append((i,j))
+        empty_cells = self.get_empty_cells_list()
         if len(empty_cells) > 0:
             cell_row, cell_col = empty_cells[np.random.randint(0,len(empty_cells))]
             if random.random() < 0.9:

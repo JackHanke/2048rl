@@ -53,7 +53,7 @@ class Gameof2048:
                     print(error_msg)
         return action
     
-    def do_move(self, action: int):
+    def do_move(self, action: int, return_afterstate: bool = False):
         # if action not in self.board.legal_moves: print('Illegal move made!')
         afterstate, reward = self.board.move_tiles(action, apply=True)
         
@@ -75,6 +75,7 @@ class Gameof2048:
             print(f'Agent chose: {action}')
             sleep(0.1)
     
+        if return_afterstate: return reward, afterstate
         return reward
 
     def play(self, verbose:bool = False):

@@ -109,6 +109,48 @@ class PolicyNet(nn.Module):
 
         return policy_logits
 
+class ValueNet(nn.Module):
+    def __init__(self, 
+            embedding_dim: int,
+            num_layers: int,
+            num_heads: int,
+            expand: int,
+            device,
+        ):
+        super().__init__()
+        self.num_layers = num_layers
+        self.embedding_dim = embedding_dim
+        self.num_heads = num_heads
+        self.expand = expand
+
+        # NOTE class token is embedding 18
+        self.embeddings = torch.nn.Embedding(num_embeddings=18, embedding_dim=embedding_dim)
+
+        self.positional_encoding = sinusoidal_positional_encoding(seq_len=17, d_model=self.embedding_dim).to(device)
+
+        self.torso = nn.Sequential(*[
+            nn.TransformerEncoderLayer(
+            d_model=self.embedding_dim,
+            nhead=num_heads,
+            dim_feedforward=self.embedding_dim*self.expand,
+            batch_first=True
+        ) for _ in range(self.num_layers)])
+
+        self.value_head = nn.Sequential(
+            nn.Linear(embedding_dim, embedding_dim//2),
+            nn.LeakyReLU(),
+            nn.Linear(embedding_dim//2, 1),
+        )
+
+    def forward(self, x: torch.tensor):
+        x = self.embeddings(x)
+        x = x + self.positional_encoding
+        x = self.torso(x)
+        # value predicted off [CLS] token
+        value_prediction = self.value_head(x[:, 0])
+        return value_prediction
+
+
 if __name__ == '__main__':
     import yaml
     with open('config.yaml', 'r') as file: config = yaml.safe_load(file)

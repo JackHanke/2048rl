@@ -48,6 +48,50 @@ def batch_eval(
     scores = [int(game.board.score) for game in games]
     return scores
 
+def batch_eval_td(
+        agent,
+        batch_size,
+        doing_rl_training: bool = False
+    ):
+    ''' Evaluate the agent by playing a batch of simultaneous games '''
+    games = [Gameof2048(game_idx=game_idx) for game_idx in range(batch_size)]
+
+    prog_bar = tqdm(total=batch_size)
+
+    moves_played = 0
+    all_games_over = False
+    while not all_games_over:
+        # make state
+        boards = [game.board for game in games if not game.game_over]
+        if len(boards) == 0: 
+            all_games_over = True
+        else:
+            actions = agent.choose(boards=boards, return_afterstates=True)
+
+            # make move
+            schedule = [game for game in games if not game.game_over]
+            for playing_game_idx, game in enumerate(schedule):
+                action = actions[playing_game_idx].item()
+                reward, afterstate = game.do_move(action=action, return_afterstate=True)
+                moves_played += 1
+
+                # 
+                if doing_rl_training:
+                    agent.add(
+                        board=afterstate,
+                        reward=reward,
+                        game_idx=game.game_idx,
+                    )
+                    # if game.do_move ended the game, finish trajectory
+                    if game.game_over:
+                        agent.buffer.finish_trajectory(game_idx=game.game_idx)
+                        
+                if game.game_over:
+                    prog_bar.update(1)
+
+    scores = [int(game.board.score) for game in games]
+    return scores
+
 
 if __name__ == '__main__':
     import torch

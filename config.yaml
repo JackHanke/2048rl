@@ -1,7 +1,7 @@
 ## CONFIGS
 
 # inference ply
-ply: 0
+ply: 1
 
 # experiment configs 
 num_iters: 1000
@@ -16,5 +16,7 @@ pretraining_epochs: 100
 pretraining_batch_size: 8192
 
 # model configs
-embedding_dim: 128
-num_layers: 6
+embedding_dim: 256
+num_layers: 3
+expand: 4
+num_heads: 8
