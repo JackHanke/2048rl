@@ -1,7 +1,7 @@
 import math
 import torch
 import torch.nn as nn
-from torchsummary import summary
+from torchinfo import summary
 
 
 def sinusoidal_positional_encoding(seq_len, d_model, n=10000.0):

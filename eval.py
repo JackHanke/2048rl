@@ -48,6 +48,8 @@ def batch_eval(
     scores = [int(game.board.score) for game in games]
     return scores
 
+
+
 def batch_eval_td(
         agent,
         batch_size,
@@ -66,8 +68,8 @@ def batch_eval_td(
         if len(boards) == 0: 
             all_games_over = True
         else:
-            actions = agent.choose(boards=boards, return_afterstates=True)
-
+            actions = agent.choose(boards=boards)
+            
             # make move
             schedule = [game for game in games if not game.game_over]
             for playing_game_idx, game in enumerate(schedule):

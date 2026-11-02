@@ -7,7 +7,7 @@ from statistics import stdev
 from tqdm import tqdm
 
 import torch
-from torchsummary import summary
+from torchinfo import summary
 
 from nets.agent import TDAgent
 from nets.net import ValueNet

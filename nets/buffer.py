@@ -85,12 +85,11 @@ class Buffer(Dataset):
         self.return_buffer = [i for game_buffer in self.return_buffer for i in game_buffer]
 
 class TDBuffer(Dataset):
-    def __init__(self, games_per_iter:int, gamma: float = 0.99, lam: float = 0.95):
+    def __init__(self, games_per_iter:int, gamma: float = 0.99):
         self.games_per_iter = games_per_iter
         self.gamma = gamma
-        self.lam = lam
         self.reset()
-        logger.info(f"Buffer initialized with γ={self.gamma}, λ={self.lam}")
+        logger.info(f"TD Buffer initialized with γ={self.gamma}")
 
     def __len__(self):
         return len(self.return_buffer)

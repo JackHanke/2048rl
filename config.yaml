@@ -4,8 +4,8 @@
 ply: 1
 
 # experiment configs 
-num_iters: 1000
-num_games_per_iter: 2048
+num_iters: 100000
+num_games_per_iter: 8
 
 # training configs
 epochs: 10

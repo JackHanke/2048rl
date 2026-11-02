@@ -1,16 +1,19 @@
 import yaml
-import numpy as np
-from math import log
 import logging
+import numpy as np
+from time import time
+from math import log
 
 import torch
-from torchsummary import summary
+from torchinfo import summary
 from torch.distributions import Categorical
 from torch.utils.data import DataLoader
 
-from nets.buffer import Buffer, TDBuffer
-from nets.net import PolicyValueNet
 from game.board import Board
+from nets.net import PolicyValueNet
+from nets.buffer import Buffer, TDBuffer
+
+from statistics import stdev
 
 with open('config.yaml', 'r') as file: config = yaml.safe_load(file)
 logger = logging.getLogger(__name__)
@@ -211,7 +214,7 @@ class TDAgent:
         
         self.net = net.to(device)
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr=self.learning_rate)
-        self.buffer = TDBuffer(games_per_iter=self.games_per_iter)
+        self.buffer = TDBuffer(games_per_iter=self.games_per_iter,gamma=1.0)
 
         # summary_str = summary(self.net, input_size=(self.batch_size, 4, 4, 17))
         # model_summary_str = '\n'+str(summary_str)
@@ -241,6 +244,9 @@ class TDAgent:
         return state_tensor
     
     def _expectimax_helper(self, board, depth):
+        # if game over
+        if len(board.legal_moves) == 0:
+            return 0.0, 0
         # make afterstates
         afterstates = []
         for move in board.legal_moves:
@@ -313,6 +319,7 @@ class TDAgent:
             move_to_play = board.legal_moves[highest_value_move_idx]
             moves_to_play.append(move_to_play)
         # this needs to be a tensor i think
+        moves_to_play = torch.tensor(moves_to_play)
         return moves_to_play
 
     def add(self,

@@ -27,7 +27,6 @@ def shiftRight(board: np.array):
 class Board:
     def __init__(self, given_board=None):
         # NOTE board uses log_2() of the tile value internally
-        print('board inited')
         if given_board is not None: 
             self.board = given_board
             self.legal_moves = self._get_legal_moves()
