@@ -3,6 +3,7 @@ import logging
 import numpy as np
 from time import time
 from math import log
+import random
 
 import torch
 from torchinfo import summary
@@ -202,6 +203,7 @@ class TDAgent:
             net,
             games_per_iter: int,
             device,
+            epsilon: float = 0.1,
             mode: str = 'training',
         ):
         self.learning_rate = 1e-5
@@ -211,6 +213,7 @@ class TDAgent:
         self.ply = ply
         self.mode = mode
         self.device=device
+        self.epsilon = epsilon
         
         self.net = net.to(device)
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr=self.learning_rate)
@@ -291,7 +294,6 @@ class TDAgent:
         else:
             afterstate_values = torch.tensor(afterstate_values)
 
-        # take the maximum
         values, indices = torch.max(afterstate_values, dim=0)
 
         return values.item(), indices.item()
@@ -315,8 +317,10 @@ class TDAgent:
         # TODO this needs work
         moves_to_play = []
         for board in boards:
-            highest_value_move_idx = self._expectimax(board)
-            move_to_play = board.legal_moves[highest_value_move_idx]
+            best_move_idx = self._expectimax(board)
+            move_to_play = board.legal_moves[best_move_idx]
+            if self.mode == 'inference' and random.random() < self.epsilon:
+                move_to_play = np.random.choice(board.legal_moves)
             moves_to_play.append(move_to_play)
         # this needs to be a tensor i think
         moves_to_play = torch.tensor(moves_to_play)
